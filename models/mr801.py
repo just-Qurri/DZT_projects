@@ -31,8 +31,8 @@ class MR801Device(ProtectionDevice):
         I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
         I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
         I_diff = params['I_diff']
-        k1 = params['k1']
-        k2 = params['k2']
+        k1 = np.tan(np.radians(params.get('k1')))
+        k2 = np.tan(np.radians(params.get('k2')))
 
         conditions = [
             I_brake <= I_brake1,

@@ -108,7 +108,7 @@ class ResultsWindow:
 
         self._create_table1(params, currents, device_type, left_panel)
         self._create_table2(I_brake1, I_brake2, y1, y2, left_panel)
-        self._create_table3(params, left_panel)
+        self._create_table3(params, device_type, left_panel)
         self._create_table4(params, currents, device_type, arbitrary_point, left_panel)
 
         # Правая панель - график
@@ -145,16 +145,11 @@ class ResultsWindow:
             ("Вторичный ток РЕТОМ-61 в одно плечо (НН), А", "-", currents['Id_lv']),
         ]
 
-        if device_type == "MR_801":
-            data.extend([
-                ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
-                ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
-            ])
-        else:
-            data.extend([
-                ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
-                ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
-            ])
+        data.extend([
+            ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
+            ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
+        ])
+
 
         for i, row_data in enumerate(data):
             tag = 'evenrow' if i % 2 == 0 else 'oddrow'
@@ -191,7 +186,7 @@ class ResultsWindow:
 
         tree.pack(fill="both", expand=True)
 
-    def _create_table3(self, params, parent):
+    def _create_table3(self, params, device_type, parent):
         """Создание таблицы с наклонами характеристик"""
         frame = ttk.LabelFrame(parent, text="3. Наклоны характеристик", padding=10)
         frame.pack(fill="x", padx=10, pady=5)
@@ -209,12 +204,22 @@ class ResultsWindow:
         tree.tag_configure('oddrow', background='white')
         tree.tag_configure('evenrow', background='#f8f9fa')
 
-        data = [
-            ("Наклон 1-й зоны (k1)", params['k1'],
-             f"{np.degrees(np.arctan(params['k1'])):.1f}°"),
-            ("Наклон 2-й зоны (k2)", params['k2'],
-             f"{np.degrees(np.arctan(params['k2'])):.1f}°")
-        ]
+
+        if device_type == "MR_801":
+            data = [
+                ("Наклон 1-й зоны (k1)",f"{np.tan(np.radians(params['k1'])):.2f}",
+                 f"{params['k1']}°"),
+                ("Наклон 2-й зоны (k2)", f"{np.tan(np.radians(params['k2'])):.2f}",
+                 f"{params['k2']}°"),
+            ]
+        else:
+            data = [
+                ("Наклон 1-й зоны (k1)", params['k1'],
+                 f"{np.degrees(np.arctan(params['k1'])):.1f}°"),
+                ("Наклон 2-й зоны (k2)", params['k2'],
+                 f"{np.degrees(np.arctan(params['k2'])):.1f}°")
+            ]
+
 
         for i, row_data in enumerate(data):
             tag = 'evenrow' if i % 2 == 0 else 'oddrow'

@@ -22,10 +22,8 @@ class AppController:
     def __init__(self, root):
         """
         Инициализация контроллера.
-
-        Args:
-            root: Корневой элемент Tkinter
         """
+
         self.root = root
         self.devices = {}
         self.current_device = None
@@ -56,9 +54,7 @@ class AppController:
     def set_device(self, device_type):
         """
         Установка текущего устройства.
-
-        Args:
-            device_type: Тип устройства
+        device_type: Тип устройства
         """
         if device_type in self.devices:
             self.current_device = self.devices[device_type]

@@ -71,6 +71,7 @@ class ProtectionDevice(ABC):
         if self.device_type == "MR_801":
             I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
             I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
+            k1 = np.tan(np.radians(params.get('k1')))
         else:
             I_brake1 = self.Ibrake1
             I_brake2 = (1 - I_diff) / k1 + I_brake1

@@ -35,11 +35,19 @@ class MainWindow:
         self.scrollable_input = None
         self.input_frame = None
 
+
         self._setup_window()
         self._setup_ui()
 
         # Привязываем событие изменения выбранного устройства
         self.selected_device.trace_add('write', lambda *args: self._on_device_change())
+
+    def _on_theme_changed(self, theme):
+        """Обработчик изменения темы"""
+        self._update_tkinter_theme()
+        # Перерисовываем поля ввода, если нужно
+        if self.entries:
+            self._create_input_fields()
 
     def _setup_window(self):
         """Настройка параметров главного окна"""
@@ -284,3 +292,10 @@ class MainWindow:
             except ValueError as e:
                 raise ValueError(f"Некорректное значение для параметра {param}: {entry.get()}")
         return params
+
+
+
+
+
+
+
