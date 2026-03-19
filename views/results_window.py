@@ -96,7 +96,9 @@ class ResultsWindow:
     def _display_results(self, params, device_type, arbitrary_point):
         """Отображение результатов"""
         currents = self.controller.calculate_currents_full(params, device_type)
-        I_brake1, I_brake2, y1, y2 = self.controller.get_break_points(params, device_type)
+
+        # Получаем 6 значений из get_break_points
+        I_brake1, I_brake2, y1, y2, k1, k2 = self.controller.get_break_points(params, device_type)
 
         # Создание контейнера для таблиц и графика
         container = ttk.Frame(self.scrollable_frame)
@@ -108,14 +110,14 @@ class ResultsWindow:
 
         self._create_table1(params, currents, device_type, left_panel)
         self._create_table2(I_brake1, I_brake2, y1, y2, left_panel)
-        self._create_table3(params, device_type, left_panel)
+        self._create_table3(k1, k2, left_panel)  # используем полученные k1, k2
         self._create_table4(params, currents, device_type, arbitrary_point, left_panel)
 
         # Правая панель - график
         right_panel = ttk.Frame(container)
         right_panel.pack(side="right", fill="both", expand=True, padx=10)
 
-        self._create_plot(right_panel, params, device_type, I_brake1, y1, I_brake2, y2, arbitrary_point)
+        self._create_plot(right_panel, params, device_type, I_brake1, y1, I_brake2, y2, k1, k2, arbitrary_point)
 
     def _create_table1(self, params, currents, device_type, parent):
         """Создание таблицы с основными параметрами"""
@@ -149,7 +151,6 @@ class ResultsWindow:
             ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
             ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
         ])
-
 
         for i, row_data in enumerate(data):
             tag = 'evenrow' if i % 2 == 0 else 'oddrow'
@@ -186,7 +187,7 @@ class ResultsWindow:
 
         tree.pack(fill="both", expand=True)
 
-    def _create_table3(self, params, device_type, parent):
+    def _create_table3(self, k1, k2, parent):
         """Создание таблицы с наклонами характеристик"""
         frame = ttk.LabelFrame(parent, text="3. Наклоны характеристик", padding=10)
         frame.pack(fill="x", padx=10, pady=5)
@@ -204,22 +205,13 @@ class ResultsWindow:
         tree.tag_configure('oddrow', background='white')
         tree.tag_configure('evenrow', background='#f8f9fa')
 
-
-        if device_type == "MR_801":
-            data = [
-                ("Наклон 1-й зоны (k1)",f"{np.tan(np.radians(params['k1'])):.2f}",
-                 f"{params['k1']}°"),
-                ("Наклон 2-й зоны (k2)", f"{np.tan(np.radians(params['k2'])):.2f}",
-                 f"{params['k2']}°"),
-            ]
-        else:
-            data = [
-                ("Наклон 1-й зоны (k1)", params['k1'],
-                 f"{np.degrees(np.arctan(params['k1'])):.1f}°"),
-                ("Наклон 2-й зоны (k2)", params['k2'],
-                 f"{np.degrees(np.arctan(params['k2'])):.1f}°")
-            ]
-
+        # Используем уже преобразованные k1 и k2
+        data = [
+            ("Наклон 1-й зоны (k1)", f"{k1:.3f}",
+             f"{np.degrees(np.arctan(k1)):.2f}°"),
+            ("Наклон 2-й зоны (k2)", f"{k2:.3f}",
+             f"{np.degrees(np.arctan(k2)):.2f}°"),
+        ]
 
         for i, row_data in enumerate(data):
             tag = 'evenrow' if i % 2 == 0 else 'oddrow'
@@ -245,37 +237,8 @@ class ResultsWindow:
         tree.tag_configure('oddrow', background='white')
         tree.tag_configure('evenrow', background='#f8f9fa')
 
-        if device_type == "RET_521_LV":
-            data = [
-                ("Блокировка от бросков тока намагничивания I2/I1 (для точки в одно плечо (НН))",
-                 f"{params['I2/I1'] / 100 * currents['Id_lv']:.2f}", params['I2/I1']),
-                ("Блокировка от перевозбуждения (для точки в одно плечо (НН)) I5/I1",
-                 f"{params['I5/I1'] / 100 * currents['Id_lv']:.2f}", params['I5/I1']),
-            ]
-        else:
-            data = [
-                ("Блокировка от бросков тока намагничивания I2/I1 (для точки в одно плечо (ВН))",
-                 f"{params['I2/I1'] / 100 * currents['Id_hv']:.2f}", params['I2/I1']),
-                ("Блокировка от перевозбуждения (для точки в одно плечо (ВН)) I5/I1",
-                 f"{params['I5/I1'] / 100 * currents['Id_hv']:.2f}", params['I5/I1']),
-            ]
-
-        if arbitrary_point:
-            I_brake, I_diff = arbitrary_point
-            if device_type == "MR_801":
-                block_I2 = f"{params['I2/I1'] / 100 * (I_brake + I_diff) * currents['I_nom_hv'] / 2 / currents['koeff_CT_HV']:.2f}"
-                block_I5 = f"{params['I5/I1'] / 100 * (I_brake + I_diff) * currents['I_nom_hv'] / 2 / currents['koeff_CT_HV']:.2f}"
-            elif device_type == "RET_521_HV":
-                block_I2 = f"{params['I2/I1'] / 100 * I_brake * currents['I_nom_hv'] / currents['koeff_CT_HV']:.2f}"
-                block_I5 = f"{params['I5/I1'] / 100 * I_brake * currents['I_nom_hv'] / currents['koeff_CT_HV']:.2f}"
-            else:
-                block_I2 = f"{params['I2/I1'] / 100 * I_brake * currents['I_nom_lv'] / currents['koeff_CT_LV']:.2f}"
-                block_I5 = f"{params['I5/I1'] / 100 * I_brake * currents['I_nom_lv'] / currents['koeff_CT_LV']:.2f}"
-
-            data.extend([
-                ("Блокировка от бросков тока намагничивания I2/I1 (для произвольной точки)", block_I2, params['I2/I1']),
-                ("Блокировка от перевозбуждения (для произвольной точки) I5/I1", block_I5, params['I5/I1'])
-            ])
+        # Получаем данные блокировок от конкретного устройства
+        data = self.controller.get_blocking_currents(params, device_type, arbitrary_point)
 
         for i, row_data in enumerate(data):
             tag = 'evenrow' if i % 2 == 0 else 'oddrow'
@@ -283,7 +246,7 @@ class ResultsWindow:
 
         tree.pack(fill="both", expand=True)
 
-    def _create_plot(self, parent, params, device_type, x1, y1, x2, y2, arbitrary_point):
+    def _create_plot(self, parent, params, device_type, x1, y1, x2, y2, k1, k2, arbitrary_point):
         """Создание графика тормозной характеристики"""
         plot_frame = ttk.LabelFrame(parent, text="Тормозная характеристика", padding=5)
         plot_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -297,8 +260,18 @@ class ResultsWindow:
         I_brake = np.linspace(0, params['zona_x'] * x2, 500)
         current_characteristic = self.controller.calculate_characteristic_full(I_brake, params, device_type)
 
+        # Определяем название устройства
+        if device_type == "MR_801":
+            device_name = "МР-801"
+        elif "RET_521" in device_type:
+            device_name = "RET-521"
+        elif "RET_670" in device_type:
+            device_name = "RET-670"
+        else:
+            device_name = device_type
+
         line, = ax.plot(I_brake, current_characteristic, 'b-', linewidth=3,
-                        label=f'Характеристика {"МР-801" if device_type == "MR_801" else "RET-521"}')
+                        label=f'Характеристика {device_name}')
 
         # Добавление линий для точек излома
         ax.plot([x1, x1], [0, y1], 'k--', alpha=1, linewidth=1.5)
@@ -324,9 +297,9 @@ class ResultsWindow:
         ax.fill_between(I_brake, 0, current_characteristic,
                         color='green', alpha=0.15, label='Зона блокировки')
 
-        # Подписи наклонов
-        k1_text = f'k1 = {params["k1"]}\nα1 = {np.degrees(np.arctan(params["k1"])):.1f}°'
-        k2_text = f'k2 = {params["k2"]}\nα2 = {np.degrees(np.arctan(params["k2"])):.1f}°'
+        # Подписи наклонов - используем уже преобразованные k1 и k2
+        k1_text = f'k1 = {k1:.3f}\nα1 = {np.degrees(np.arctan(k1)):.1f}°'
+        k2_text = f'k2 = {k2:.3f}\nα2 = {np.degrees(np.arctan(k2)):.1f}°'
 
         ax.text(x1 - x2 * 0.02, y1 + y2 * 0.1 * (params['zona_y'] / 2.5), k1_text,
                 bbox=dict(boxstyle='round,pad=0.5', fc='wheat', alpha=0.8, ec='black'),
@@ -337,7 +310,8 @@ class ResultsWindow:
 
         # Добавление расчетной точки
         if arbitrary_point:
-            I_brake_point, I_diff_point = arbitrary_point
+            I_brake_point = arbitrary_point['I_brake']
+            I_diff_point = arbitrary_point['I_diff']
             ax.scatter(I_brake_point, I_diff_point, color='red', s=100, zorder=5,
                        label=f'Расчетная точка ({I_brake_point:.2f}, {I_diff_point:.2f})')
             ax.plot([I_brake_point, I_brake_point], [0, I_diff_point], 'k--', alpha=1, linewidth=1.5)
@@ -349,8 +323,7 @@ class ResultsWindow:
                     va='bottom')
 
         # Настройка внешнего вида
-        ax.set_title(f'Тормозная характеристика {"МР-801" if device_type == "MR_801" else "RET-521"}',
-                     fontsize=12, pad=10)
+        ax.set_title(f'Тормозная характеристика {device_name}', fontsize=12, pad=10)
         ax.set_xlabel(r'Ток торможения, $I_{\text{торм}}$ [$I_{\text{ном}}$]', fontsize=11, labelpad=5)
         ax.set_ylabel(r'Ток срабатывания, $I_{\text{дифф}}$ [$I_{\text{ном}}$]', fontsize=11, labelpad=5)
         ax.grid(True, linestyle='--', alpha=0.6)

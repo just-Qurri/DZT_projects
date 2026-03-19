@@ -45,11 +45,21 @@ class RET670Device(ProtectionDevice):
 
         choices = [
             I_diff,
-            I_diff + k1/100 * (I_brake - I_brake1),
-            I_diff + k1/100 * (I_brake2 - I_brake1) + k2/100 * (I_brake - I_brake2)
+            I_diff + k1 * (I_brake - I_brake1),
+            I_diff + k1 * (I_brake2 - I_brake1) + k2 * (I_brake - I_brake2)
         ]
 
         return np.select(conditions, choices)
+
+    def get_break_points_data(self, params):
+        """Получение данных для точек излома RET-670"""
+        I_diff = params['I_diff']
+        I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
+        I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
+        k1 = params.get('k1') / 100
+        k2 = params.get('k2') / 100
+
+        return I_brake1, I_brake2, k1, k2, I_diff
 
     def calculate_currents_full(self, params):
         """
@@ -79,20 +89,20 @@ class RET670Device(ProtectionDevice):
         Id_hv = params['I_diff'] * I_nom_hv / koeff_CT_HV
         Id_lv = params['I_diff'] * I_nom_lv / koeff_CT_LV
 
-        I_brake1 = params.get('I_brake1', 0.5)
-        I_brake2 = params.get('I_brake2', 1.5)
+        I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
+        I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
 
         if self.device_type == "RET_670_HV":
-            retom_hv1 = self.I_brake1 / koeff_CT_HV * I_nom_hv
-            retom_lv1 = (self.I_brake1 - params['I_diff']) / koeff_CT_LV * I_nom_lv
+            retom_hv1 = I_brake1 / koeff_CT_HV * I_nom_hv
+            retom_lv1 = (I_brake1 - params['I_diff']) / koeff_CT_LV * I_nom_lv
             retom_hv2 = I_brake2 / koeff_CT_HV * I_nom_hv
             retom_lv2 = (I_brake2 - (
-                        params['I_diff'] + params['k1']/100 * (I_brake2 - self.I_brake1))) / koeff_CT_LV * I_nom_lv
+                    params['I_diff'] + (params['k1'] / 100) * (I_brake2 - I_brake1))) / koeff_CT_LV * I_nom_lv
         else:  # RET_670_LV
-            retom_hv1 = (self.I_brake1 - params['I_diff']) / koeff_CT_HV * I_nom_hv
-            retom_lv1 = self.I_brake1 / koeff_CT_LV * I_nom_lv
+            retom_hv1 = (I_brake1 - params['I_diff']) / koeff_CT_HV * I_nom_hv
+            retom_lv1 = I_brake1 / koeff_CT_LV * I_nom_lv
             retom_hv2 = (I_brake2 - (
-                        params['I_diff'] + params['k1']/100* (I_brake2 - self.I_brake1))) / koeff_CT_HV * I_nom_hv
+                    params['I_diff'] + (params['k1'] / 100) * (I_brake2 - I_brake1))) / koeff_CT_HV * I_nom_hv
             retom_lv2 = I_brake2 / koeff_CT_LV * I_nom_lv
 
         return {
@@ -143,3 +153,36 @@ class RET670Device(ProtectionDevice):
                 'retom_lv_arb': I_brake * I_nom_lv / koeff_CT_LV,
                 'retom_skvoz_arb': (I_brake - I_diff) * I_nom_hv * params['U_hv'] / params['U_lv'] / koeff_CT_LV
             }
+
+    def calculate_blocking_currents(self, currents, params, arbitrary_point=None):
+        """Расчет блокировок для RET-670"""
+        if self.device_type == "RET_670_LV":
+            data = [
+                ("Блокировка от бросков тока намагничивания I2/I1 (для точки в одно плечо (НН))",
+                 f"{params['I2/I1'] / 100 * currents['Id_lv']:.2f}", params['I2/I1']),
+                ("Блокировка от перевозбуждения (для точки в одно плечо (НН)) I5/I1",
+                 f"{params['I5/I1'] / 100 * currents['Id_lv']:.2f}", params['I5/I1']),
+            ]
+        else:  # RET_670_HV
+            data = [
+                ("Блокировка от бросков тока намагничивания I2/I1 (для точки в одно плечо (ВН))",
+                 f"{params['I2/I1'] / 100 * currents['Id_hv']:.2f}", params['I2/I1']),
+                ("Блокировка от перевозбуждения (для точки в одно плечо (ВН)) I5/I1",
+                 f"{params['I5/I1'] / 100 * currents['Id_hv']:.2f}", params['I5/I1']),
+            ]
+
+        if arbitrary_point:
+            I_brake, I_diff = arbitrary_point['I_brake'], arbitrary_point['I_diff']
+            if self.device_type == "RET_670_HV":
+                block_I2 = f"{params['I2/I1'] / 100 * I_brake * currents['I_nom_hv'] / currents['koeff_CT_HV']:.2f}"
+                block_I5 = f"{params['I5/I1'] / 100 * I_brake * currents['I_nom_hv'] / currents['koeff_CT_HV']:.2f}"
+            else:  # RET_670_LV
+                block_I2 = f"{params['I2/I1'] / 100 * I_brake * currents['I_nom_lv'] / currents['koeff_CT_LV']:.2f}"
+                block_I5 = f"{params['I5/I1'] / 100 * I_brake * currents['I_nom_lv'] / currents['koeff_CT_LV']:.2f}"
+
+            data.extend([
+                ("Блокировка от бросков тока намагничивания I2/I1 (для произвольной точки)", block_I2, params['I2/I1']),
+                ("Блокировка от перевозбуждения (для произвольной точки) I5/I1", block_I5, params['I5/I1'])
+            ])
+
+        return data

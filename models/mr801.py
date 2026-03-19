@@ -48,6 +48,15 @@ class MR801Device(ProtectionDevice):
 
         return np.select(conditions, choices)
 
+    def get_break_points_data(self, params):
+        """Получение данных для точек излома МР-801"""
+        I_diff = params['I_diff']
+        I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
+        I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
+        k1 = np.tan(np.radians(params.get('k1')))
+        k2 = np.tan(np.radians(params.get('k2')))
+        return I_brake1, I_brake2, k1,k2, I_diff
+
     def calculate_currents_full(self, params):
         """
         Расчет токов для МР-801.
@@ -125,3 +134,25 @@ class MR801Device(ProtectionDevice):
             'retom_lv_arb': (I_brake - I_diff) * I_nom_lv / 2 / koeff_CT_LV,
             'retom_skvoz_arb': (I_brake + I_diff) * I_nom_hv * params['U_hv'] / params['U_lv'] / 2 / koeff_CT_LV
         }
+
+
+    def calculate_blocking_currents(self, currents, params, arbitrary_point=None):
+        """Расчет блокировок для МР-801"""
+        data = [
+            ("Блокировка от бросков тока намагничивания I2/I1 (для точки в одно плечо (ВН))",
+             f"{params['I2/I1'] / 100 * currents['Id_hv']:.2f}", params['I2/I1']),
+            ("Блокировка от перевозбуждения (для точки в одно плечо (ВН)) I5/I1",
+             f"{params['I5/I1'] / 100 * currents['Id_hv']:.2f}", params['I5/I1']),
+        ]
+
+        if arbitrary_point:
+            I_brake, I_diff = arbitrary_point['I_brake'], arbitrary_point['I_diff']
+            block_I2 = f"{params['I2/I1'] / 100 * (I_brake + I_diff) * currents['I_nom_hv'] / 2 / currents['koeff_CT_HV']:.2f}"
+            block_I5 = f"{params['I5/I1'] / 100 * (I_brake + I_diff) * currents['I_nom_hv'] / 2 / currents['koeff_CT_HV']:.2f}"
+
+            data.extend([
+                ("Блокировка от бросков тока намагничивания I2/I1 (для произвольной точки)", block_I2, params['I2/I1']),
+                ("Блокировка от перевозбуждения (для произвольной точки) I5/I1", block_I5, params['I5/I1'])
+            ])
+
+        return data

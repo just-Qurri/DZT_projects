@@ -159,7 +159,21 @@ class AppController:
         I_brake_array = np.array([I_brake])
         I_diff = device.calculate_characteristic_full(I_brake_array)[0]
 
-        return I_brake, I_diff
+        return {
+            'I_brake': I_brake,
+            'I_diff': I_diff
+        }
+
+    def get_blocking_currents(self, params, device_type, arbitrary_point=None):
+        """Получение данных блокировок через конкретное устройство"""
+        device = self.devices[device_type]
+        numeric_params = device.numeric_params(params)
+
+        # Сначала получаем токи для расчетов
+        currents = self.calculate_currents_full(params, device_type)
+
+        # Вызываем специфичный для устройства метод расчета блокировок
+        return device.calculate_blocking_currents(currents, numeric_params, arbitrary_point)
 
     def show_results(self, params, device_type):
         """

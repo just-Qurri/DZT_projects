@@ -34,20 +34,12 @@ class MainWindow:
         self.current_params = {}  # Добавляем атрибут для текущих параметров
         self.scrollable_input = None
         self.input_frame = None
-
-
         self._setup_window()
         self._setup_ui()
 
         # Привязываем событие изменения выбранного устройства
         self.selected_device.trace_add('write', lambda *args: self._on_device_change())
 
-    def _on_theme_changed(self, theme):
-        """Обработчик изменения темы"""
-        self._update_tkinter_theme()
-        # Перерисовываем поля ввода, если нужно
-        if self.entries:
-            self._create_input_fields()
 
     def _setup_window(self):
         """Настройка параметров главного окна"""
@@ -96,7 +88,9 @@ class MainWindow:
         devices = [
             ("МР-801", "MR_801"),
             ("RET-521 (ОПОРА ВН)", "RET_521_HV"),
-            ("RET-521 (ОПОРА НН)", "RET_521_LV")
+            ("RET-521 (ОПОРА НН)", "RET_521_LV"),
+            ("RET-670 (ОПОРА ВН)", "RET_670_HV"),
+            ("RET-670 (ОПОРА НН)", "RET_670_LV"),
         ]
 
         for text, mode in devices:
@@ -147,11 +141,7 @@ class MainWindow:
         row = 0
         for param, default_value in params.items():
             # Пропускаем I_brake1 для RET-521 (кроме MR-801)
-            if param == 'I_brake1' and device_type != "MR_801":
-                continue
-
-            # Пропускаем I_brake2 для RET-521 (кроме MR-801)
-            if param == 'I_brake2' and device_type != "MR_801":
+            if param in ['I_brake1', 'I_brake2'] and device_type not in ["MR_801", "RET_670_HV", "RET_670_LV"]:
                 continue
 
             # Проверяем, есть ли подпись для параметра

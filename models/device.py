@@ -3,7 +3,6 @@
 Определяет общий интерфейс и методы для расчета характеристик.
 """
 
-import numpy as np
 from abc import ABC, abstractmethod
 
 
@@ -18,13 +17,12 @@ class ProtectionDevice(ABC):
         Инициализация устройства защиты.
 
         Args:
-            device_type: Тип устройства (MR_801, RET_521_HV, RET_521_LV)
+            device_type: Тип устройства (MR_801, RET_521_HV, RET_521_LV, RET_670_HV, RET_670_LV)
             default_params: Параметры по умолчанию для данного устройства
         """
         self.device_type = device_type
         self.default_params = default_params.copy()
         self.current_params = default_params.copy()
-        self.I_brake1 = 1.25  # Для RET-521 фиксированное значение
 
     @abstractmethod
     def calculate_characteristic_full(self, I_brake):
@@ -67,6 +65,21 @@ class ProtectionDevice(ABC):
         """
         pass
 
+    @abstractmethod
+    def calculate_blocking_currents(self, currents, params, arbitrary_point=None):
+        """
+        Расчет токов блокировки для таблицы результатов.
+
+        Args:
+            currents: Словарь с рассчитанными токами
+            params: Параметры для расчета
+            arbitrary_point: Данные произвольной точки (если есть)
+
+        Returns:
+            Список кортежей для таблицы блокировок
+        """
+        pass
+
     def get_break_points(self, params=None):
         """
         Получение точек излома характеристики для построения графика.
@@ -75,30 +88,31 @@ class ProtectionDevice(ABC):
             params: Параметры для расчета (если None, используются текущие)
 
         Returns:
-            Кортеж (I_brake1, I_brake2, y1, y2)
+            Кортеж (I_brake1, I_brake2, y1, y2, k1, k2)
         """
         if params is None:
             params = self.current_params
 
-        I_diff = params['I_diff']
-        k1 = params['k1']
-
-        if self.device_type == "MR_801":
-            I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
-            I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
-            k1 = np.tan(np.radians(params.get('k1')))
-        elif self.device_type =="RET_670":
-            I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
-            I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
-            k1 = np.tan(np.radians(params.get('k1')/100))
-        else:
-            I_brake1 = self.I_brake1
-            I_brake2 = (1 - I_diff) / k1 + I_brake1
+        # Получаем все данные через метод конкретного устройства
+        I_brake1, I_brake2, k1, k2, I_diff = self.get_break_points_data(params)
 
         y1 = I_diff
         y2 = y1 + k1 * (I_brake2 - I_brake1)
 
-        return I_brake1, I_brake2, y1, y2
+        return I_brake1, I_brake2, y1, y2, k1, k2
+
+    @abstractmethod
+    def get_break_points_data(self, params):
+        """
+        Получение данных для точек излома.
+
+        Args:
+            params: Параметры для расчета
+
+        Returns:
+            Кортеж (I_brake1, I_brake2, k1, I_diff)
+        """
+        pass
 
     def validate_params(self, params):
         """
