@@ -95,6 +95,23 @@ class DeviceConstants:
         # I_brake1 и I_brake2 отсутствуют, так как они фиксированы в логике устройства
     }
 
+    RET670_HV_DEFAULTS={
+        **BASE_PARAMS,
+        'I_brake1': 1.25,   # добавляем значение тормозного тока для первого участка
+        'I_brake2': 2,   # добавляем значение тормозного тока для второго участка
+        'k1': 50,          # наклон после первого участка (%)
+        'k2': 80,          # наклон после второго участка (%)
+    }
+
+    RET670_LV_DEFAULTS={
+        **BASE_PARAMS,
+        'I_brake1': 1.25,   # добавляем значение тормозного тока для первого участка
+        'I_brake2': 2,   # добавляем значение тормозного тока для второго участка
+        'k1': 50,          # наклон после первого участка (%)
+        'k2': 80,          # наклон после второго участка (%)
+    }
+
+
     # Заметки и пояснения для каждого устройства
     NOTES = {
         'MR_801': """Особенности работы с МР-801:
@@ -162,16 +179,37 @@ class DeviceConstants:
         # I_brake1 и I_brake2 отсутствуют, так как они фиксированы
     }
 
+    RET670_HV_PARAM_LABELS = {
+        **BASE_PARAM_LABELS,
+        'I_brake1': "Конец первого участка (EndSection1) [Iном]:",
+        'I_brake2': "Конец второго участка (EndSection2) [Iном]:",
+        'k1': "Наклон 1-й зоны k1 (вводить в %):",
+        'k2': "Наклон 2-й зоны k2 (вводить в %):"
+    }
+
+    RET670_LV_PARAM_LABELS = {
+        **BASE_PARAM_LABELS,
+        'I_brake1': "Конец первого участка (EndSection1) [Iном]:",
+        'I_brake2': "Конец второго участка (EndSection2) [Iном]:",
+        'k1': "Наклон 1-й зоны k1 (вводить в %:",
+        'k2': "Наклон 2-й зоны k2 (вводить в %):"
+    }
+
+
     # Словарь для получения параметров по умолчанию по типу устройства
     DEFAULTS_BY_DEVICE = {
         'MR_801': MR801_DEFAULTS,
         'RET_521_HV': RET521_HV_DEFAULTS,
-        'RET_521_LV': RET521_LV_DEFAULTS
+        'RET_521_LV': RET521_LV_DEFAULTS,
+        'RET_670_HV': RET670_HV_DEFAULTS,
+        'RET_670_LV': RET670_LV_DEFAULTS
     }
 
     # Словарь для получения подписей по типу устройства
     PARAM_LABELS_BY_DEVICE = {
         'MR_801': MR801_PARAM_LABELS,
         'RET_521_HV': RET521_HV_PARAM_LABELS,
-        'RET_521_LV': RET521_LV_PARAM_LABELS
+        'RET_521_LV': RET521_LV_PARAM_LABELS,
+        'RET_670_HV': RET670_HV_PARAM_LABELS,
+        'RET_670_LV': RET670_LV_PARAM_LABELS
     }

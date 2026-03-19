@@ -7,7 +7,7 @@ import numpy as np
 from .device import ProtectionDevice
 
 
-class RET521Device(ProtectionDevice):
+class RET670Device(ProtectionDevice):
     """
     Класс для работы с устройством RET-521.
     Реализует методы расчета характеристик для данного типа защиты.
@@ -16,18 +16,13 @@ class RET521Device(ProtectionDevice):
 
     def __init__(self, device_type, default_params):
         """
-        Инициализация устройства RET-521.
-
-        Args:
-            device_type: Тип устройства (RET_521_HV или RET_521_LV)
-            default_params: Параметры по умолчанию
+        Инициализация устройства RET-670.
         """
         super().__init__(device_type, default_params)
-        self.I_brake1 = 1.25  # Фиксированное значение для RET-521
 
     def calculate_characteristic(self, I_brake):
         """
-        Расчет характеристики срабатывания для RET-521.
+        Расчет характеристики срабатывания для RET-670.
 
         Args:
             I_brake: Массив тормозных токов
@@ -37,27 +32,28 @@ class RET521Device(ProtectionDevice):
         """
         params = self.current_params
         I_diff = params['I_diff']
-        k1 = params['k1']
-        k2 = params['k2']
-        I_brake2 = (1 - I_diff) / k1 + self.I_brake1
+        I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
+        I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
+        k1 = params['k1']/100
+        k2 = params['k2']/100
 
         conditions = [
-            I_brake <= self.I_brake1,
-            (I_brake > self.I_brake1) & (I_brake <= I_brake2),
+            I_brake <= I_brake1,
+            (I_brake > I_brake1) & (I_brake <= I_brake2),
             I_brake > I_brake2
         ]
 
         choices = [
             I_diff,
-            I_diff + k1 * (I_brake - self.I_brake1),
-            I_diff + k1 * (I_brake2 - self.I_brake1) + k2 * (I_brake - I_brake2)
+            I_diff + k1 * (I_brake - I_brake1),
+            I_diff + k1 * (I_brake2 - I_brake1) + k2 * (I_brake - I_brake2)
         ]
 
         return np.select(conditions, choices)
 
     def calculate_currents(self, params):
         """
-        Расчет токов для RET-521.
+        Расчет токов для RET-670.
 
         Args:
             params: Параметры для расчета
@@ -83,15 +79,16 @@ class RET521Device(ProtectionDevice):
         Id_hv = params['I_diff'] * I_nom_hv / koeff_CT_HV
         Id_lv = params['I_diff'] * I_nom_lv / koeff_CT_LV
 
-        I_brake2 = (1 - params['I_diff']) / params['k1'] + self.I_brake1
+        I_brake1 = params.get('I_brake1', 0.5)
+        I_brake2 = params.get('I_brake2', 1.5)
 
-        if self.device_type == "RET_521_HV":
+        if self.device_type == "RET_670_HV":
             retom_hv1 = self.I_brake1 / koeff_CT_HV * I_nom_hv
             retom_lv1 = (self.I_brake1 - params['I_diff']) / koeff_CT_LV * I_nom_lv
             retom_hv2 = I_brake2 / koeff_CT_HV * I_nom_hv
             retom_lv2 = (I_brake2 - (
-                        params['I_diff'] + params['k1'] * (I_brake2 - self.I_brake1))) / koeff_CT_LV * I_nom_lv
-        else:  # RET_521_LV
+                        params['I_diff'] + params['k1']/100 * (I_brake2 - self.I_brake1))) / koeff_CT_LV * I_nom_lv
+        else:  # RET_670_LV
             retom_hv1 = (self.I_brake1 - params['I_diff']) / koeff_CT_HV * I_nom_hv
             retom_lv1 = self.I_brake1 / koeff_CT_LV * I_nom_lv
             retom_hv2 = (I_brake2 - (

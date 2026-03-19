@@ -8,6 +8,7 @@ import numpy as np
 
 from models.mr801 import MR801Device
 from models.ret521 import RET521Device
+from models.ret670 import RET670Device
 from config.constants import DeviceConstants
 from views.main_window import MainWindow
 from views.results_window import ResultsWindow
@@ -43,6 +44,8 @@ class AppController:
         self.devices['MR_801'] = MR801Device(copy.deepcopy(DeviceConstants.MR801_DEFAULTS))
         self.devices['RET_521_HV'] = RET521Device('RET_521_HV', copy.deepcopy(DeviceConstants.RET521_HV_DEFAULTS))
         self.devices['RET_521_LV'] = RET521Device('RET_521_LV', copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS))
+        self.devices['RET_670_HV'] = RET670Device('RET_670_HV', copy.deepcopy(DeviceConstants.RET670_HV_DEFAULTS))
+        self.devices['RET_670_HV'] = RET670Device('RET_670_LV', copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS))
         self.current_device = self.devices['MR_801']
 
     def _init_main_window(self):
@@ -73,17 +76,6 @@ class AppController:
         """
         return self.devices[device_type].default_params.copy()
 
-    def get_current_params(self, device_type):
-        """
-        Получение текущих параметров для устройства.
-
-        Args:
-            device_type: Тип устройства
-
-        Returns:
-            Словарь с текущими параметрами
-        """
-        return self.devices[device_type].current_params.copy()
 
     def update_device_params(self, device_type, params):
         """
