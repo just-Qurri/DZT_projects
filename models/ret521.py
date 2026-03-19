@@ -25,7 +25,7 @@ class RET521Device(ProtectionDevice):
         super().__init__(device_type, default_params)
         self.I_brake1 = 1.25  # Фиксированное значение для RET-521
 
-    def calculate_characteristic(self, I_brake):
+    def calculate_characteristic_full(self, I_brake):
         """
         Расчет характеристики срабатывания для RET-521.
 
@@ -55,7 +55,7 @@ class RET521Device(ProtectionDevice):
 
         return np.select(conditions, choices)
 
-    def calculate_currents(self, params):
+    def calculate_currents_full(self, params):
         """
         Расчет токов для RET-521.
 
@@ -113,7 +113,7 @@ class RET521Device(ProtectionDevice):
             'Id_lv': round(Id_lv, 2)
         }
 
-    def calculate_arbitrary_point(self, I_brake, I_diff, params):
+    def calculate_arbitrary_point_full(self, I_brake, I_diff, params):
         """
         Расчет токов для произвольной точки.
 

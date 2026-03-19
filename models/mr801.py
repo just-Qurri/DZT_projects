@@ -17,7 +17,7 @@ class MR801Device(ProtectionDevice):
         """Инициализация устройства МР-801"""
         super().__init__("MR_801", default_params)
 
-    def calculate_characteristic(self, I_brake):
+    def calculate_characteristic_full(self, I_brake):
         """
         Расчет характеристики срабатывания для МР-801.
 
@@ -48,7 +48,7 @@ class MR801Device(ProtectionDevice):
 
         return np.select(conditions, choices)
 
-    def calculate_currents(self, params):
+    def calculate_currents_full(self, params):
         """
         Расчет токов для МР-801.
 
@@ -99,7 +99,7 @@ class MR801Device(ProtectionDevice):
             'Id_lv': round(Id_lv, 2)
         }
 
-    def calculate_arbitrary_point(self, I_brake, I_diff, params):
+    def calculate_arbitrary_point_full(self, I_brake, I_diff, params):
         """
         Расчет токов для произвольной точки.
 

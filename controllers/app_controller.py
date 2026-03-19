@@ -45,7 +45,7 @@ class AppController:
         self.devices['RET_521_HV'] = RET521Device('RET_521_HV', copy.deepcopy(DeviceConstants.RET521_HV_DEFAULTS))
         self.devices['RET_521_LV'] = RET521Device('RET_521_LV', copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS))
         self.devices['RET_670_HV'] = RET670Device('RET_670_HV', copy.deepcopy(DeviceConstants.RET670_HV_DEFAULTS))
-        self.devices['RET_670_HV'] = RET670Device('RET_670_LV', copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS))
+        self.devices['RET_670_LV'] = RET670Device('RET_670_LV', copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS))
         self.current_device = self.devices['MR_801']
 
     def _init_main_window(self):
@@ -87,7 +87,7 @@ class AppController:
         """
         self.devices[device_type].update_params(params)
 
-    def calculate_currents(self, params, device_type):
+    def calculate_currents_full(self, params, device_type):
         """
         Расчет токов для таблицы результатов.
 
@@ -106,9 +106,9 @@ class AppController:
             messagebox.showerror('Ошибка ввода данных', error)
             return {}
 
-        return device.calculate_currents(numeric_params)
+        return device.calculate_currents_full(numeric_params)
 
-    def calculate_characteristic(self, I_brake, params, device_type):
+    def calculate_characteristic_full(self, I_brake, params, device_type):
         """
         Расчет характеристики срабатывания.
 
@@ -123,7 +123,7 @@ class AppController:
         device = self.devices[device_type]
         numeric_params = device.numeric_params(params)
         device.update_params(numeric_params)
-        return device.calculate_characteristic(I_brake)
+        return device.calculate_characteristic_full(I_brake)
 
     def get_break_points(self, params, device_type):
         """
@@ -140,7 +140,7 @@ class AppController:
         numeric_params = device.numeric_params(params)
         return device.get_break_points(numeric_params)
 
-    def calculate_arbitrary_point(self, I_brake, params, device_type):
+    def calculate_arbitrary_point_full(self, I_brake, params, device_type):
         """
         Расчет произвольной точки характеристики.
 
@@ -157,7 +157,7 @@ class AppController:
         device.update_params(numeric_params)
 
         I_brake_array = np.array([I_brake])
-        I_diff = device.calculate_characteristic(I_brake_array)[0]
+        I_diff = device.calculate_characteristic_full(I_brake_array)[0]
 
         return I_brake, I_diff
 
@@ -174,7 +174,7 @@ class AppController:
 
         # Рассчитываем произвольную точку, если есть I_arbitrary
         if 'I_arbitrary' in params:
-            self.arbitrary_point = self.calculate_arbitrary_point(
+            self.arbitrary_point = self.calculate_arbitrary_point_full(
                 params['I_arbitrary'], params, device_type
             )
 

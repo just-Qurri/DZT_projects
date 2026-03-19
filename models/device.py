@@ -27,20 +27,20 @@ class ProtectionDevice(ABC):
         self.I_brake1 = 1.25  # Для RET-521 фиксированное значение
 
     @abstractmethod
-    def calculate_characteristic(self, I_brake):
+    def calculate_characteristic_full(self, I_brake):
         """
         Расчет характеристики срабатывания защиты.
 
         Args:
-            I_brake: Массив тормозных токов
+            I_brake: Массив из двух точке (тормозных токов)
 
         Returns:
-            Массив дифференциальных токов
+            Массив дифференциальных токов и тормозных токов
         """
         pass
 
     @abstractmethod
-    def calculate_currents(self, params):
+    def calculate_currents_full(self, params):
         """
         Расчет токов для таблицы результатов.
 
@@ -52,9 +52,24 @@ class ProtectionDevice(ABC):
         """
         pass
 
+    @abstractmethod
+    def calculate_arbitrary_point_full(self, I_brake, I_diff, params):
+        """
+        Расчет токов для произвольной точки
+
+        Args:
+            I_brake: Тормозной ток в произвольной точке
+            I_diff: Дифференциальный ток в произвольной точке
+            params: Параметры для расчета
+
+        Returns:
+            Словарь с рассчитанными токами для произвольной точки
+        """
+        pass
+
     def get_break_points(self, params=None):
         """
-        Получение точек излома характеристики.
+        Получение точек излома характеристики для построения графика.
 
         Args:
             params: Параметры для расчета (если None, используются текущие)
@@ -72,6 +87,10 @@ class ProtectionDevice(ABC):
             I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
             I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
             k1 = np.tan(np.radians(params.get('k1')))
+        elif self.device_type =="RET_670":
+            I_brake1 = params.get('I_brake1', self.default_params['I_brake1'])
+            I_brake2 = params.get('I_brake2', self.default_params['I_brake2'])
+            k1 = np.tan(np.radians(params.get('k1')/100))
         else:
             I_brake1 = self.I_brake1
             I_brake2 = (1 - I_diff) / k1 + I_brake1
@@ -91,8 +110,13 @@ class ProtectionDevice(ABC):
         Returns:
             Кортеж (is_valid, error_message)
         """
-        required = ['S_nom', 'U_hv', 'U_lv', 'CT_hv_perv', 'CT_hv_sec',
-                   'CT_lv_perv', 'CT_lv_sec']
+        required = ['S_nom',
+                    'U_hv',
+                    'U_lv',
+                    'CT_hv_perv',
+                    'CT_hv_sec',
+                    'CT_lv_perv',
+                    'CT_lv_sec']
 
         for key in required:
             if key not in params:

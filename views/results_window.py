@@ -95,7 +95,7 @@ class ResultsWindow:
 
     def _display_results(self, params, device_type, arbitrary_point):
         """Отображение результатов"""
-        currents = self.controller.calculate_currents(params, device_type)
+        currents = self.controller.calculate_currents_full(params, device_type)
         I_brake1, I_brake2, y1, y2 = self.controller.get_break_points(params, device_type)
 
         # Создание контейнера для таблиц и графика
@@ -295,7 +295,7 @@ class ResultsWindow:
 
         # Построение характеристики
         I_brake = np.linspace(0, params['zona_x'] * x2, 500)
-        current_characteristic = self.controller.calculate_characteristic(I_brake, params, device_type)
+        current_characteristic = self.controller.calculate_characteristic_full(I_brake, params, device_type)
 
         line, = ax.plot(I_brake, current_characteristic, 'b-', linewidth=3,
                         label=f'Характеристика {"МР-801" if device_type == "MR_801" else "RET-521"}')

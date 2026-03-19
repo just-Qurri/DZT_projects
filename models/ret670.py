@@ -1,5 +1,5 @@
 """
-Модель для устройства RET-521.
+Модель для устройства RET-670.
 Реализует специфичную логику расчета для данного устройства.
 """
 
@@ -9,7 +9,7 @@ from .device import ProtectionDevice
 
 class RET670Device(ProtectionDevice):
     """
-    Класс для работы с устройством RET-521.
+    Класс для работы с устройством RET-670.
     Реализует методы расчета характеристик для данного типа защиты.
     Поддерживает два режима: опора ВН и опора НН.
     """
@@ -20,7 +20,7 @@ class RET670Device(ProtectionDevice):
         """
         super().__init__(device_type, default_params)
 
-    def calculate_characteristic(self, I_brake):
+    def calculate_characteristic_full(self, I_brake):
         """
         Расчет характеристики срабатывания для RET-670.
 
@@ -45,13 +45,13 @@ class RET670Device(ProtectionDevice):
 
         choices = [
             I_diff,
-            I_diff + k1 * (I_brake - I_brake1),
-            I_diff + k1 * (I_brake2 - I_brake1) + k2 * (I_brake - I_brake2)
+            I_diff + k1/100 * (I_brake - I_brake1),
+            I_diff + k1/100 * (I_brake2 - I_brake1) + k2/100 * (I_brake - I_brake2)
         ]
 
         return np.select(conditions, choices)
 
-    def calculate_currents(self, params):
+    def calculate_currents_full(self, params):
         """
         Расчет токов для RET-670.
 
@@ -92,7 +92,7 @@ class RET670Device(ProtectionDevice):
             retom_hv1 = (self.I_brake1 - params['I_diff']) / koeff_CT_HV * I_nom_hv
             retom_lv1 = self.I_brake1 / koeff_CT_LV * I_nom_lv
             retom_hv2 = (I_brake2 - (
-                        params['I_diff'] + params['k1'] * (I_brake2 - self.I_brake1))) / koeff_CT_HV * I_nom_hv
+                        params['I_diff'] + params['k1']/100* (I_brake2 - self.I_brake1))) / koeff_CT_HV * I_nom_hv
             retom_lv2 = I_brake2 / koeff_CT_LV * I_nom_lv
 
         return {
@@ -110,7 +110,7 @@ class RET670Device(ProtectionDevice):
             'Id_lv': round(Id_lv, 2)
         }
 
-    def calculate_arbitrary_point(self, I_brake, I_diff, params):
+    def calculate_arbitrary_point_full(self, I_brake, I_diff, params):
         """
         Расчет токов для произвольной точки.
 
@@ -131,13 +131,13 @@ class RET670Device(ProtectionDevice):
         koeff_CT_HV = params['CT_hv_perv'] / params['CT_hv_sec']
         koeff_CT_LV = params['CT_lv_perv'] / params['CT_lv_sec']
 
-        if self.device_type == "RET_521_HV":
+        if self.device_type == "RET_670_HV":
             return {
                 'retom_hv_arb': I_brake * I_nom_hv / koeff_CT_HV,
                 'retom_lv_arb': (I_brake - I_diff) * I_nom_lv / koeff_CT_LV,
                 'retom_skvoz_arb': I_brake * I_nom_hv * params['U_hv'] / params['U_lv'] / koeff_CT_LV
             }
-        else:  # RET_521_LV
+        else:  # RET_670_LV
             return {
                 'retom_hv_arb': (I_brake - I_diff) * I_nom_hv / koeff_CT_HV,
                 'retom_lv_arb': I_brake * I_nom_lv / koeff_CT_LV,
