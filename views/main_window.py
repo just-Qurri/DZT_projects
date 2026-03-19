@@ -121,7 +121,12 @@ class MainWindow:
         device_type = self.selected_device.get()
         params = self.controller.get_default_params(device_type)
 
-        # Сохраняем текущие параметры
+        # Получаем подписи для конкретного устройства
+        param_labels = DeviceConstants.PARAM_LABELS_BY_DEVICE.get(
+            device_type,
+            DeviceConstants.BASE_PARAM_LABELS
+        )
+
         self.current_params = params.copy()
         self.entries = {}
 
@@ -137,17 +142,22 @@ class MainWindow:
             if param == 'I_brake1' and device_type != "MR_801":
                 continue
 
+            # Пропускаем I_brake2 для RET-521 (кроме MR-801)
+            if param == 'I_brake2' and device_type != "MR_801":
+                continue
+
             # Проверяем, есть ли подпись для параметра
-            if param not in DeviceConstants.PARAM_LABELS:
+            if param not in param_labels:
                 continue
 
             label = ttk.Label(
                 grid_frame,
-                text=DeviceConstants.PARAM_LABELS[param],
+                text=param_labels[param],
                 anchor='w',
-                style='TLabel'
+                style='TLabel',
+                wraplength=400  # Добавляем перенос текста для длинных подписей
             )
-            label.grid(row=row, column=0, sticky='ew', pady=5)
+            label.grid(row=row, column=0, sticky='ew', pady=5, padx=(5, 10))
 
             entry_frame = ModernEntry(grid_frame, width=15)
             entry_frame.grid(row=row, column=1, sticky='ew', pady=5, padx=(0, 10))
