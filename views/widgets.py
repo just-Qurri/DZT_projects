@@ -1,6 +1,5 @@
 """
 Кастомные виджеты для пользовательского интерфейса.
-Содержит стилизованные элементы управления.
 """
 
 from tkinter import *
@@ -8,131 +7,175 @@ from tkinter import ttk
 from config.constants import AppStyles
 
 
-class CardFrame(ttk.Frame):
+class Card(ttk.Frame):
     """
-    Стилизованный фрейм-карточка с тенью для группировки элементов интерфейса.
-    Может содержать заголовок и имеет оформленные границы.
+    Красивая карточка с закругленными углами и тенью.
     """
 
-    def __init__(self, parent, title="", padding=15, *args, **kwargs):
-        """
-        Инициализация карточки.
+    def __init__(self, parent, title="", padding=AppStyles.PADDING_LG, **kwargs):
+        super().__init__(parent, **kwargs)
 
-        Args:
-            parent: Родительский виджет
-            title: Заголовок карточки
-            padding: Внутренние отступы
-        """
-        super().__init__(parent, *args, **kwargs)
-        self._create_card(title, padding)
+        # Настраиваем стиль карточки
+        self.configure(style='Card.TFrame')
 
-    def _create_card(self, title, padding):
-        """Внутренний метод для создания содержимого карточки"""
-        self.config(style='Card.TFrame')
+        # Создаем внутренний контейнер
+        inner = ttk.Frame(self, style='CardInner.TFrame')
+        inner.pack(fill=BOTH, expand=True, padx=1, pady=1)
+
+        # Заголовок с иконкой
         if title:
-            self.label = ttk.Label(self, text=title, style='CardTitle.TLabel')
-            self.label.pack(side=TOP, fill=X, padx=5, pady=(0, 10))
+            header = ttk.Frame(inner, style='CardHeader.TFrame')
+            header.pack(fill=X, padx=padding, pady=(padding, 0))
 
-        self.content_frame = ttk.Frame(self)
-        self.content_frame.pack(fill=BOTH, expand=True, padx=5, pady=(0, 5))
+            # Иконка (простой символ)
+            icon_map = {
+                'параметры': '⚙️',
+                'результаты': '📊',
+                'устройство': '🔧',
+                'памятка': '📝'
+            }
+            icon = '📌'
+            for key, value in icon_map.items():
+                if key in title.lower():
+                    icon = value
+                    break
+
+            ttk.Label(header, text=icon, style='CardIcon.TLabel').pack(side=LEFT, padx=(0, 8))
+            ttk.Label(header, text=title.upper(), style='CardTitle.TLabel').pack(side=LEFT)
+
+        # Контейнер для содержимого
+        self.content = ttk.Frame(inner, style='CardContent.TFrame')
+        self.content.pack(fill=BOTH, expand=True, padx=padding, pady=padding)
 
 
-class ModernEntry(ttk.Frame):
+class InputField(ttk.Frame):
     """
-    Современное поле ввода с улучшенным дизайном.
-    Поддерживает стилизацию и различные состояния.
+    Красивое поле ввода с плавающей подписью.
     """
 
-    def __init__(self, parent, *args, **kwargs):
-        """Инициализация поля ввода"""
-        width = kwargs.pop('width', 20)
-        super().__init__(parent, *args, **kwargs)
-        self._setup_style()
-        self._create_widgets(width)
+    def __init__(self, parent, label="", **kwargs):
+        super().__init__(parent, style='Input.TFrame')
 
-    def _setup_style(self):
-        """Настройка стилей для поля ввода"""
-        self.style = ttk.Style()
-        self.style.configure('Modern.TEntry',
-                             fieldbackground=AppStyles.ENTRY_BG,
-                             foreground=AppStyles.DARK_TEXT,
-                             borderwidth=1,
-                             relief='solid',
-                             padding=(5, 3),
-                             font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_REGULAR))
+        self.label = label
+        self.value = StringVar()
 
-        self.style.map('Modern.TEntry',
-                       fieldbackground=[('focus', AppStyles.ENTRY_BG)],
-                       foreground=[('focus', AppStyles.DARK_TEXT)],
-                       bordercolor=[('focus', AppStyles.ENTRY_BORDER_FOCUS)])
+        # Метка
+        self.label_widget = ttk.Label(self, text=label, style='InputLabel.TLabel')
+        self.label_widget.pack(anchor=W, padx=4, pady=(0, 2))
 
-    def _create_widgets(self, width):
-        """Создание виджетов поля ввода"""
-        self.entry_var = StringVar()
-        self.entry = ttk.Entry(
-            self,
-            textvariable=self.entry_var,
-            style='Modern.TEntry',
-            width=width
-        )
-        self.entry.pack(fill=BOTH, expand=True, padx=1, pady=1)
+        # Контейнер для поля ввода
+        entry_frame = ttk.Frame(self, style='InputEntry.TFrame')
+        entry_frame.pack(fill=X)
+
+        # Поле ввода
+        self.entry = ttk.Entry(entry_frame,
+                               textvariable=self.value,
+                               style='Input.TEntry',
+                               **kwargs)
+        self.entry.pack(fill=X, padx=1, pady=1)
+
+        # Индикатор фокуса
+        self.focus_indicator = Frame(entry_frame, height=2, bg=AppStyles.BORDER)
+        self.focus_indicator.pack(fill=X)
+
+        # Привязка событий
+        self.entry.bind('<FocusIn>', self._on_focus_in)
+        self.entry.bind('<FocusOut>', self._on_focus_out)
+
+    def _on_focus_in(self, event):
+        self.focus_indicator.configure(bg=AppStyles.PRIMARY)
+        self.label_widget.configure(foreground=AppStyles.PRIMARY)
+
+    def _on_focus_out(self, event):
+        self.focus_indicator.configure(bg=AppStyles.BORDER)
+        self.label_widget.configure(foreground=AppStyles.TEXT_SECONDARY)
 
     def get(self):
-        """Получение текущего значения поля ввода"""
-        return self.entry_var.get()
+        return self.value.get()
 
-    def insert(self, index, string):
-        """Вставка значения в поле ввода"""
-        self.entry_var.set(string)
+    def set(self, value):
+        self.value.set(value)
+
+
+class Button(ttk.Button):
+    """
+    Красивая кнопка с эффектами.
+    """
+
+    def __init__(self, parent, text="", variant="primary", **kwargs):
+        style = f'{variant.capitalize()}.TButton'
+        super().__init__(parent, text=text, style=style, **kwargs)
+
+
+class RadioGroup(ttk.Frame):
+    """
+    Стилизованная группа радио-кнопок.
+    """
+
+    def __init__(self, parent, options, **kwargs):
+        super().__init__(parent, style='RadioGroup.TFrame', **kwargs)
+
+        self.value = StringVar()
+        self.value.set(options[0][1])  # Первое значение по умолчанию
+
+        for text, value in options:
+            rb = ttk.Radiobutton(self,
+                                text=text,
+                                variable=self.value,
+                                value=value,
+                                style='Modern.TRadiobutton')
+            rb.pack(anchor=W, pady=4)
 
 
 class ScrollableFrame(ttk.Frame):
     """
-    Прокручиваемый фрейм с автоматической прокруткой.
-    Позволяет размещать большое количество виджетов в ограниченном пространстве.
+    Красивый прокручиваемый фрейм.
     """
 
-    def __init__(self, container, *args, **kwargs):
-        """Инициализация прокручиваемого фрейма"""
-        super().__init__(container, *args, **kwargs)
-        self._setup_widgets()
-        self._bind_events()
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
 
-    def _setup_widgets(self):
-        """Настройка виджетов для прокрутки"""
-        self.canvas = Canvas(self, highlightthickness=0, bg=AppStyles.LIGHT_BG)
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.scrollbar.pack(side=RIGHT, fill=Y)
+        # Canvas
+        self.canvas = Canvas(self,
+                            highlightthickness=0,
+                            bg=AppStyles.BACKGROUND)
 
+        # Scrollbar
+        self.scrollbar = ttk.Scrollbar(self,
+                                       orient=VERTICAL,
+                                       command=self.canvas.yview)
+
+        # Настраиваем canvas
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Фрейм для содержимого
+        self.scrollable_frame = ttk.Frame(self.canvas)
+        self.canvas_frame = self.canvas.create_window((0, 0),
+                                                      window=self.scrollable_frame,
+                                                      anchor=NW)
+
+        # Размещаем
+        self.scrollbar.pack(side=RIGHT, fill=Y)
         self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
-        self.content_frame = ttk.Frame(self.canvas)
-        self.canvas_frame = self.canvas.create_window((0, 0), window=self.content_frame, anchor=NW)
-
-    def _bind_events(self):
-        """Привязка обработчиков событий"""
-        self.content_frame.bind("<Configure>", self._on_frame_configure)
-        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        # События
+        self.scrollable_frame.bind('<Configure>', self._on_frame_configure)
+        self.canvas.bind('<Configure>', self._on_canvas_configure)
         self._bind_mousewheel()
 
     def _on_frame_configure(self, event):
-        """Обработчик изменения размеров фрейма"""
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
     def _on_canvas_configure(self, event):
-        """Обработчик изменения размеров canvas"""
         self.canvas.itemconfig(self.canvas_frame, width=event.width)
 
     def _bind_mousewheel(self):
-        """Привязка обработчиков колеса мыши"""
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
+        def on_mousewheel(event):
+            if event.delta:
+                self.canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+        self.canvas.bind_all('<MouseWheel>', on_mousewheel)
 
-    def _on_mousewheel(self, event):
-        """Обработчик прокрутки колесом мыши"""
-        if event.num == 4 or event.delta > 0:
-            self.canvas.yview_scroll(-1, "units")
-        elif event.num == 5 or event.delta < 0:
-            self.canvas.yview_scroll(1, "units")
+
+# Для обратной совместимости
+CardFrame = Card
+ModernEntry = InputField

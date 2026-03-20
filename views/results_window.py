@@ -51,7 +51,7 @@ class ResultsWindow:
         screen_height = self.window.winfo_screenheight()
         self.window.geometry(f"{screen_width - 100}x{screen_height - 100}+50+50")
         self.window.state('zoomed')
-        self.window.configure(bg=AppStyles.LIGHT_BG)
+        self.window.configure(bg=AppStyles.BACKGROUND)  # Изменено с LIGHT_BG на BACKGROUND
 
         self.window.protocol("WM_DELETE_WINDOW", self._close)
         self.window.bind('<Escape>', lambda e: self._close())
@@ -60,7 +60,7 @@ class ResultsWindow:
         main_container = ttk.Frame(self.window)
         main_container.pack(fill="both", expand=True, padx=10, pady=10)
 
-        canvas = Canvas(main_container, highlightthickness=0, bg=AppStyles.LIGHT_BG)
+        canvas = Canvas(main_container, highlightthickness=0, bg=AppStyles.BACKGROUND)
         scrollbar = ttk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
         self.scrollable_frame = ttk.Frame(canvas)
 
@@ -334,6 +334,26 @@ class ResultsWindow:
         canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True, padx=0, pady=0)
+
+    def update_results(self, params, device_type, arbitrary_point=None):
+        """
+        Обновление существующего окна с результатами.
+
+        Args:
+            params: Параметры для расчета
+            device_type: Тип устройства
+            arbitrary_point: Произвольная точка
+        """
+        # Очищаем содержимое scrollable_frame
+        if self.scrollable_frame:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+
+        # Заново отображаем результаты
+        self._display_results(params, device_type, arbitrary_point)
+
+        # Обновляем заголовок окна
+        self.window.title(f"Результаты расчета характеристик защиты - {device_type}")
 
     def _close(self):
         """Закрытие окна результатов"""

@@ -52,7 +52,8 @@ class AppController:
         """Инициализация главного окна"""
         self.main_window = MainWindow(self.root, self)
         # После создания окна, сразу создаем поля ввода
-        self.main_window.after(100, self.main_window._create_input_fields)
+        self.root.after(100,
+                        self.main_window._create_input_fields)  # Изменено: self.root.after вместо self.main_window.after
 
     def set_device(self, device_type):
         """
@@ -192,8 +193,21 @@ class AppController:
                 params['I_arbitrary'], params, device_type
             )
 
-        # Создаем или показываем окно результатов
-        if not self.results_window or not hasattr(self.results_window, 'window') or not self.results_window.window:
-            self.results_window = ResultsWindow(self.root, self)
+        # Проверяем, существует ли окно результатов и открыто ли оно
+        if self.results_window and hasattr(self.results_window, 'window') and self.results_window.window:
+            # Окно уже существует - проверяем, не уничтожено ли оно
+            try:
+                if self.results_window.window.winfo_exists():
+                    # Окно существует - обновляем его содержимое
+                    self.results_window.update_results(params, device_type, self.arbitrary_point)
+                    # Поднимаем окно на передний план
+                    self.results_window.window.lift()
+                    self.results_window.window.focus_force()
+                    return
+            except:
+                # Окно было уничтожено - создаем новое
+                pass
 
+        # Создаем новое окно
+        self.results_window = ResultsWindow(self.root, self)
         self.results_window.show(params, device_type, self.arbitrary_point)

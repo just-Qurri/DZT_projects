@@ -1,23 +1,35 @@
 """
 Главный модуль программы для расчета характеристик дифференциальных защит трансформаторов.
-Программа позволяет моделировать и анализировать работу защитных устройств MR-801, RET-521, RET-670.
 """
 
-import tkinter as tk
+import tkinter as tk  # Добавьте эту строку
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 
 from config.constants import AppStyles
+from views.theme import setup_theme
 from controllers.app_controller import AppController
 
 
 def main():
     """Точка входа в программу"""
-    # Настройка стилей
+    # Настройка стилей matplotlib
     AppStyles.configure_styles()
 
     # Создание главного окна
-    root = tk.Tk()
+    root = tk.Tk()  # Теперь tk определен
+
+    # Применение современной темы
+    setup_theme(root)
+
+    # Установка иконки (если есть)
+    try:
+        root.iconbitmap('icon.ico')
+    except:
+        pass
+
+    # Настройка заголовка
+    root.title("📊 Расчет характеристик дифференциальных защит")
 
     # Создание контроллера приложения
     app = AppController(root)

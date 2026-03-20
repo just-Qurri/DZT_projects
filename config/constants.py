@@ -5,49 +5,79 @@
 
 from matplotlib import rcParams
 
+"""
+Модуль с константами и стилями приложения.
+Содержит цветовые схемы, настройки шрифтов и параметры оформления.
+"""
+
+from matplotlib import rcParams
+
 
 class AppStyles:
     """
     Класс для хранения и управления стилями приложения.
-    Содержит цветовую схему, настройки шрифтов и параметры оформления.
     """
-    # Цветовая схема приложения
-    PRIMARY_COLOR = "#3498db"  # Основной синий цвет для акцентных элементов
-    SECONDARY_COLOR = "#2980b9"  # Дополнительный синий цвет
-    ACCENT_COLOR = "#3498db"  # Цвет для выделения важных элементов
-    HOVER_COLOR = "#2980b9"  # Цвет при наведении курсора
-    SUCCESS_COLOR = "#2ecc71"  # Цвет для успешных операций
-    WARNING_COLOR = "#e74c3c"  # Цвет для предупреждений и ошибок
-    LIGHT_BG = "#f8f9fa"  # Светлый фон интерфейса
-    DARK_TEXT = "#2c3e50"  # Цвет основного текста
-    LIGHT_TEXT = "#ecf0f1"  # Цвет текста на темном фоне
-    ENTRY_BG = "#ffffff"  # Фон полей ввода
-    ENTRY_BORDER = "#ced4da"  # Цвет границы полей ввода
-    ENTRY_BORDER_FOCUS = "#3498db"  # Цвет границы при фокусировке
-    DISABLED_BG = "#e9ecef"  # Фон неактивных элементов
-    CARD_BG = "#ffffff"  # Фон карточек
-    SHADOW_COLOR = "rgba(0,0,0,0.1)"  # Цвет теней
+    # Современная цветовая палитра (Material Design 3)
+    PRIMARY = "#6366F1"  # Индиго
+    PRIMARY_LIGHT = "#818CF8"
+    PRIMARY_DARK = "#4F46E5"
+
+    SECONDARY = "#10B981"  # Изумрудный
+    SECONDARY_LIGHT = "#34D399"
+    SECONDARY_DARK = "#059669"
+
+    ACCENT = "#F59E0B"  # Янтарный
+    ACCENT_LIGHT = "#FBBF24"
+    ACCENT_DARK = "#D97706"
+
+    # Нейтральные цвета
+    BACKGROUND = "#F9FAFB"  # Очень светлый серый
+    SURFACE = "#FFFFFF"  # Белый
+    SURFACE_VARIANT = "#F3F4F6"  # Светло-серый
+
+    # Текст
+    TEXT_PRIMARY = "#111827"  # Почти черный
+    TEXT_SECONDARY = "#6B7280"  # Серый
+    TEXT_ON_COLOR = "#FFFFFF"  # Белый на цветном фоне
+
+    # Границы
+    BORDER = "#E5E7EB"
+    BORDER_FOCUS = "#6366F1"
+
+    # Статусы
+    SUCCESS = "#10B981"
+    WARNING = "#F59E0B"
+    ERROR = "#EF4444"
+    INFO = "#3B82F6"
 
     # Настройки шрифтов
-    FONT_FAMILY = 'Segoe UI'  # Основное семейство шрифтов
-    FONT_SIZE_SMALL = 10  # Размер шрифта для мелкого текста
-    FONT_SIZE_REGULAR = 11  # Стандартный размер шрифта
-    FONT_SIZE_LARGE = 12  # Крупный размер шрифта
-    FONT_SIZE_TITLE = 14  # Размер шрифта для заголовков
+    FONT_FAMILY = 'Arial'  # Современный шрифт
+    FONT_FAMILY_FALLBACK = 'Segoe UI'
+    FONT_SIZE_XS = 10
+    FONT_SIZE_SM = 11
+    FONT_SIZE_MD = 12
+    FONT_SIZE_LG = 14
+    FONT_SIZE_XL = 18
 
-    @staticmethod
-    def configure_styles():
-        """
-        Настройка глобальных стилей для matplotlib.
-        Устанавливает параметры шрифтов, цветов и отображения графиков.
-        """
-        rcParams['font.family'] = AppStyles.FONT_FAMILY
-        rcParams['axes.titlecolor'] = AppStyles.DARK_TEXT
-        rcParams['axes.labelcolor'] = AppStyles.DARK_TEXT
-        rcParams['xtick.color'] = AppStyles.DARK_TEXT
-        rcParams['ytick.color'] = AppStyles.DARK_TEXT
-        rcParams['figure.facecolor'] = AppStyles.LIGHT_BG
-        rcParams['axes.facecolor'] = AppStyles.LIGHT_BG
+    # Размеры
+    BORDER_RADIUS = 8
+    PADDING_SM = 8
+    PADDING_MD = 12
+    PADDING_LG = 16
+
+    @classmethod
+    def configure_styles(cls):
+        """Настройка стилей matplotlib"""
+        rcParams['font.family'] = [cls.FONT_FAMILY, cls.FONT_FAMILY_FALLBACK]
+        rcParams['axes.titlecolor'] = cls.TEXT_PRIMARY
+        rcParams['axes.labelcolor'] = cls.TEXT_SECONDARY
+        rcParams['xtick.color'] = cls.TEXT_SECONDARY
+        rcParams['ytick.color'] = cls.TEXT_SECONDARY
+        rcParams['figure.facecolor'] = cls.BACKGROUND
+        rcParams['axes.facecolor'] = cls.SURFACE
+        rcParams['axes.grid'] = True
+        rcParams['grid.color'] = cls.BORDER
+        rcParams['grid.alpha'] = 0.5
 
 
 class DeviceConstants:

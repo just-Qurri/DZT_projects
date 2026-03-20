@@ -1,0 +1,165 @@
+"""
+Настройка темы оформления.
+"""
+
+from tkinter import ttk
+from config.constants import AppStyles
+
+
+def setup_theme(root):
+    """Настройка современной темы"""
+
+    style = ttk.Style()
+    style.theme_use('clam')
+
+    # --- Базовые цвета ---
+    style.configure('.',
+                   background=AppStyles.BACKGROUND,
+                   foreground=AppStyles.TEXT_PRIMARY,
+                   fieldbackground=AppStyles.SURFACE,
+                   selectbackground=AppStyles.PRIMARY,
+                   selectforeground='white',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
+
+    # --- Карточки ---
+    style.configure('Card.TFrame',
+                   background=AppStyles.SURFACE,
+                   relief='flat',
+                   borderwidth=0)
+
+    style.configure('CardInner.TFrame',
+                   background=AppStyles.SURFACE,
+                   relief='solid',
+                   borderwidth=1,
+                   bordercolor=AppStyles.BORDER)
+
+    style.configure('CardHeader.TFrame',
+                   background=AppStyles.SURFACE)
+
+    style.configure('CardTitle.TLabel',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_LG, 'bold'),
+                   background=AppStyles.SURFACE,
+                   foreground=AppStyles.TEXT_PRIMARY)
+
+    style.configure('CardIcon.TLabel',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_LG),
+                   background=AppStyles.SURFACE,
+                   foreground=AppStyles.PRIMARY)
+
+    style.configure('CardContent.TFrame',
+                   background=AppStyles.SURFACE)
+
+    # --- Поля ввода ---
+    style.configure('Input.TFrame',
+                   background=AppStyles.BACKGROUND)
+
+    style.configure('InputLabel.TLabel',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_SM),
+                   background=AppStyles.BACKGROUND,
+                   foreground=AppStyles.TEXT_SECONDARY)
+
+    style.configure('InputEntry.TFrame',
+                   background=AppStyles.BORDER,
+                   relief='flat')
+
+    style.configure('Input.TEntry',
+                   fieldbackground=AppStyles.SURFACE,
+                   foreground=AppStyles.TEXT_PRIMARY,
+                   insertcolor=AppStyles.PRIMARY,
+                   insertwidth=2,
+                   borderwidth=0,
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD),
+                   padding=(AppStyles.PADDING_SM, AppStyles.PADDING_SM))
+
+    # --- Кнопки ---
+    style.configure('Primary.TButton',
+                   background=AppStyles.PRIMARY,
+                   foreground='white',
+                   borderwidth=0,
+                   focuscolor='none',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                   padding=(AppStyles.PADDING_LG, AppStyles.PADDING_SM))
+
+    style.map('Primary.TButton',
+             background=[('active', AppStyles.PRIMARY_DARK),
+                        ('pressed', AppStyles.PRIMARY_DARK)],
+             relief=[('pressed', 'sunken')])
+
+    style.configure('Secondary.TButton',
+                   background=AppStyles.SECONDARY,
+                   foreground='white',
+                   borderwidth=0,
+                   focuscolor='none',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                   padding=(AppStyles.PADDING_LG, AppStyles.PADDING_SM))
+
+    style.map('Secondary.TButton',
+             background=[('active', AppStyles.SECONDARY_DARK),
+                        ('pressed', AppStyles.SECONDARY_DARK)])
+
+    style.configure('Outline.TButton',
+                   background='transparent',
+                   foreground=AppStyles.PRIMARY,
+                   borderwidth=2,
+                   focuscolor='none',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                   padding=(AppStyles.PADDING_LG, AppStyles.PADDING_SM))
+
+    style.map('Outline.TButton',
+             background=[('active', AppStyles.PRIMARY + '10')],
+             relief=[('pressed', 'sunken')])
+
+    # --- Радио-кнопки ---
+    style.configure('Modern.TRadiobutton',
+                    background=AppStyles.BACKGROUND,
+                    foreground=AppStyles.TEXT_PRIMARY,
+                    font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD),
+                    indicatorcolor=AppStyles.PRIMARY,
+                    indicatorrelief='flat',  # Убираем рельеф
+                    borderwidth=0,  # Убираем границу
+                    focuscolor='none',  # Убираем цвет фокуса
+                    focusthickness=0)  # Убираем толщину фокуса
+
+    style.map('Modern.TRadiobutton',
+              background=[('active', AppStyles.BACKGROUND),
+                          ('pressed', AppStyles.BACKGROUND)],
+              indicatorcolor=[('selected', AppStyles.PRIMARY),
+                              ('active', AppStyles.PRIMARY_LIGHT)],
+              relief=[('pressed', 'flat')])  # Убираем изменение рельефа при нажатии
+
+    # --- Таблицы ---
+    style.configure('Treeview',
+                   background=AppStyles.SURFACE,
+                   foreground=AppStyles.TEXT_PRIMARY,
+                   fieldbackground=AppStyles.SURFACE,
+                   borderwidth=0,
+                   rowheight=40,
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
+
+    style.configure('Treeview.Heading',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                   background=AppStyles.SURFACE_VARIANT,
+                   foreground=AppStyles.TEXT_PRIMARY,
+                   borderwidth=0,
+                   relief='flat')
+
+    style.map('Treeview.Heading',
+             background=[('active', AppStyles.BORDER)])
+
+    style.map('Treeview',
+             background=[('selected', AppStyles.PRIMARY + '20')],
+             foreground=[('selected', AppStyles.TEXT_PRIMARY)])
+
+    # --- LabelFrame ---
+    style.configure('TLabelframe',
+                   background=AppStyles.BACKGROUND,
+                   bordercolor=AppStyles.BORDER,
+                   relief='solid',
+                   borderwidth=1)
+
+    style.configure('TLabelframe.Label',
+                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                   foreground=AppStyles.TEXT_PRIMARY,
+                   background=AppStyles.BACKGROUND)
+
+    return style
