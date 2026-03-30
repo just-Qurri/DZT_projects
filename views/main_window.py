@@ -75,10 +75,10 @@ class MainWindow:
 
         options = [
             ("🔹 МР-801", "MR_801"),
-            ("🔸 RET-521 (ОПОРА ВН)", "RET_521_HV"),
-            ("🔸 RET-521 (ОПОРА НН)", "RET_521_LV"),
-            ("💠 RET-670 (ОПОРА ВН)", "RET_670_HV"),
-            ("💠 RET-670 (ОПОРА НН)", "RET_670_LV")
+            ("🔹 RET-521 (ОПОРА ВН)", "RET_521_HV"),
+            ("🔹 RET-521 (ОПОРА НН)", "RET_521_LV"),
+            ("🔹 RET-670 (ОПОРА ВН)", "RET_670_HV"),
+            ("🔹 RET-670 (ОПОРА НН)", "RET_670_LV")
         ]
 
         radio_group = RadioGroup(card.content, options)
@@ -211,7 +211,10 @@ class MainWindow:
         """Показать результаты"""
         try:
             params = self._get_current_params()
-            self.controller.show_results(params, self.selected_device.get())
+            device_type = self.selected_device.get()
+            print(f"\n🔍 _on_show_results: device_type = '{device_type}'")  # ДОБАВИТЬ
+            print(f"   params = {params}")  # ДОБАВИТЬ
+            self.controller.show_results(params, device_type)
         except ValueError as e:
             messagebox.showerror("Ошибка ввода", str(e))
 

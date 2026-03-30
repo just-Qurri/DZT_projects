@@ -115,16 +115,44 @@ class RadioGroup(ttk.Frame):
     def __init__(self, parent, options, **kwargs):
         super().__init__(parent, style='RadioGroup.TFrame', **kwargs)
 
-        self.value = StringVar()
-        self.value.set(options[0][1])  # Первое значение по умолчанию
+        self._value_var = StringVar()
+        self._value_var.set(options[0][1])  # Первое значение по умолчанию
+        self.options = options
+        self.buttons = []  # Сохраняем кнопки для возможного обновления
 
         for text, value in options:
             rb = ttk.Radiobutton(self,
                                 text=text,
-                                variable=self.value,
+                                variable=self._value_var,
                                 value=value,
                                 style='Modern.TRadiobutton')
             rb.pack(anchor=W, pady=4)
+            self.buttons.append(rb)
+
+    @property
+    def value(self):
+        """Получить текущее значение"""
+        return self._value_var.get()
+
+    @value.setter
+    def value(self, new_value):
+        """Установить новое значение и обновить все кнопки"""
+        if isinstance(new_value, StringVar):
+            # Если передали StringVar, нужно перепривязать все кнопки
+            self._value_var = new_value
+            for rb in self.buttons:
+                rb.configure(variable=self._value_var)
+        else:
+            # Если передали строковое значение
+            self._value_var.set(new_value)
+
+    def set(self, value):
+        """Установить значение (альтернативный метод)"""
+        self._value_var.set(value)
+
+    def get(self):
+        """Получить значение (альтернативный метод)"""
+        return self._value_var.get()
 
 
 class ScrollableFrame(ttk.Frame):

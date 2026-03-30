@@ -4,13 +4,12 @@ from .device import ProtectionDevice, WindingSide, SlopeFormat
 class RET670Device(ProtectionDevice):
 
     def __init__(self, device_type, default_params):
-        # RET670: коэффициенты вводятся в ПРОЦЕНТАХ (80 = 80%)
         super().__init__(device_type, default_params, slope_format=SlopeFormat.PERCENT)
 
     def _calculate_retom_points(self, base, p):
         I_brake1, I_brake2 = p['I_brake1'], p['I_brake2']
         I_diff = p['I_diff']
-        k1 = p['k1']  # уже нормализован (value/100)
+        k1 = p['k1']
 
         if self.winding_side == WindingSide.HV:
             return {

@@ -149,7 +149,9 @@ class ResultsWindow:
 
         data.extend([
             ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
+            ("Вторичный ток РЕТОМ-61 (т.1) (режим сквозного КЗ), А", currents['retom_skvoz_hv1'], currents['retom_skvoz_lv1']),
             ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
+            ("Вторичный ток РЕТОМ-61 (т.2) (режим сквозного КЗ), А", currents['retom_skvoz_hv2'], currents['retom_skvoz_lv2']),
         ])
 
         for i, row_data in enumerate(data):

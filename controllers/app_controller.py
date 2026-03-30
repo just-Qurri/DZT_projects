@@ -91,15 +91,17 @@ class AppController:
     def calculate_currents_full(self, params, device_type):
         """
         Расчет токов для таблицы результатов.
-
-        Args:
-            params: Параметры для расчета
-            device_type: Тип устройства
-
-        Returns:
-            Словарь с рассчитанными токами
         """
+        print(f"\n🔍 Controller.calculate_currents_full: device_type = '{device_type}'")  # ДОБАВИТЬ
+        print(f"   Доступные устройства: {list(self.devices.keys())}")  # ДОБАВИТЬ
+
+        if device_type not in self.devices:
+            print(f"   ❌ ОШИБКА: устройство '{device_type}' не найдено!")  # ДОБАВИТЬ
+            return {}
+
         device = self.devices[device_type]
+        print(f"   ✅ Использую устройство: {device.device_type}")  # ДОБАВИТЬ
+
         numeric_params = device.numeric_params(params)
         is_valid, error = device.validate_params(numeric_params)
 
@@ -179,11 +181,9 @@ class AppController:
     def show_results(self, params, device_type):
         """
         Отображение окна с результатами.
-
-        Args:
-            params: Параметры для расчета
-            device_type: Тип устройства
         """
+        print(f"\n🔍 Controller.show_results: device_type = '{device_type}'")  # ДОБАВИТЬ
+
         # Сохраняем параметры в устройство
         self.update_device_params(device_type, params)
 
@@ -193,19 +193,15 @@ class AppController:
                 params['I_arbitrary'], params, device_type
             )
 
-        # Проверяем, существует ли окно результатов и открыто ли оно
+        # Проверяем, существует ли окно результатов
         if self.results_window and hasattr(self.results_window, 'window') and self.results_window.window:
-            # Окно уже существует - проверяем, не уничтожено ли оно
             try:
                 if self.results_window.window.winfo_exists():
-                    # Окно существует - обновляем его содержимое
                     self.results_window.update_results(params, device_type, self.arbitrary_point)
-                    # Поднимаем окно на передний план
                     self.results_window.window.lift()
                     self.results_window.window.focus_force()
                     return
             except:
-                # Окно было уничтожено - создаем новое
                 pass
 
         # Создаем новое окно

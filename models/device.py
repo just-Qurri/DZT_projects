@@ -37,6 +37,8 @@ class ProtectionDevice(ABC):
         self.current_params = default_params.copy()
         self.slope_format = slope_format
         self.winding_side = self._get_winding_side(device_type)
+        print(f"🔍 Создан {self.__class__.__name__}: device_type='{device_type}', side={self.winding_side}")
+
 
     def _get_winding_side(self, device_type):
         if device_type and "_HV" in device_type:
@@ -130,15 +132,23 @@ class ProtectionDevice(ABC):
     # ============ ТОКИ РЕТОМА (универсальный метод) ============
 
     def calculate_currents_full(self, params):
-        """Расчет токов для таблицы (общий для всех)"""
+        print(f"\n{'=' * 50}")
+        print(f"calculate_currents_full для {self.device_type}")
+        print(f"self.winding_side = {self.winding_side}")
+
         base = self._get_base_params(params)
         p = self._get_char_params(params)
+
+        print(f"p['I_brake1'] = {p['I_brake1']}")
+        print(f"p['I_brake2'] = {p['I_brake2']}")
+        print(f"p['I_diff'] = {p['I_diff']}")
+        print(f"p['k1'] = {p['k1']}")
 
         # Дифференциальные токи
         Id_hv = p['I_diff'] * base['I_nom_hv'] / base['koeff_CT_HV']
         Id_lv = p['I_diff'] * base['I_nom_lv'] / base['koeff_CT_LV']
 
-        # Токи ретома для точек излома (зависит от типа устройства)
+        # Токи ретома для точек излома
         retom = self._calculate_retom_points(base, p)
 
         return {
@@ -152,7 +162,6 @@ class ProtectionDevice(ABC):
             'Id_lv': round(Id_lv, 2),
             **retom
         }
-
     def calculate_arbitrary_point_full(self, I_brake, I_diff, params):
         """Произвольная точка (общий для всех)"""
         base = self._get_base_params(params)
