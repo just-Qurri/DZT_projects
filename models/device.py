@@ -37,7 +37,6 @@ class ProtectionDevice(ABC):
         self.current_params = default_params.copy()
         self.slope_format = slope_format
         self.winding_side = self._get_winding_side(device_type)
-        print(f"🔍 Создан {self.__class__.__name__}: device_type='{device_type}', side={self.winding_side}")
 
 
     def _get_winding_side(self, device_type):

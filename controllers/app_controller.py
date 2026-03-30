@@ -52,8 +52,7 @@ class AppController:
         """Инициализация главного окна"""
         self.main_window = MainWindow(self.root, self)
         # После создания окна, сразу создаем поля ввода
-        self.root.after(100,
-                        self.main_window._create_input_fields)  # Изменено: self.root.after вместо self.main_window.after
+        self.root.after(100,self.main_window._create_input_fields)
 
     def set_device(self, device_type):
         """
@@ -92,16 +91,7 @@ class AppController:
         """
         Расчет токов для таблицы результатов.
         """
-        print(f"\n🔍 Controller.calculate_currents_full: device_type = '{device_type}'")  # ДОБАВИТЬ
-        print(f"   Доступные устройства: {list(self.devices.keys())}")  # ДОБАВИТЬ
-
-        if device_type not in self.devices:
-            print(f"   ❌ ОШИБКА: устройство '{device_type}' не найдено!")  # ДОБАВИТЬ
-            return {}
-
         device = self.devices[device_type]
-        print(f"   ✅ Использую устройство: {device.device_type}")  # ДОБАВИТЬ
-
         numeric_params = device.numeric_params(params)
         is_valid, error = device.validate_params(numeric_params)
 

@@ -42,36 +42,41 @@ class MainWindow:
 
     def _create_ui(self):
         """Создание интерфейса"""
-        # Главный контейнер
         main = ttk.Frame(self.root, style='Card.TFrame')
         main.grid(row=0, column=0, sticky='nsew', padx=20, pady=20)
-        main.grid_columnconfigure(0, weight=1)
-        main.grid_columnconfigure(1, weight=1)
+
+        # НАСТРОЙКА СООТНОШЕНИЯ КОЛОНОК
+        main.grid_columnconfigure(0, weight=65)  # Левая колонка - 65%
+        main.grid_columnconfigure(1, weight=35)  # Правая колонка - 35%
         main.grid_rowconfigure(0, weight=1)
 
-        # Левая колонка
+        # Левая колонка - НАСТРОИТЬ РАСТЯЖЕНИЕ
         left_col = ttk.Frame(main)
         left_col.grid(row=0, column=0, sticky='nsew', padx=(0, 10))
+        left_col.grid_columnconfigure(0, weight=1)  # ДОБАВИТЬ - чтобы содержимое растягивалось
         left_col.grid_rowconfigure(1, weight=1)
 
         # Правая колонка
-        right_col = ttk.Frame(main, width=400)
+        right_col = ttk.Frame(main)
         right_col.grid(row=0, column=1, sticky='nsew', padx=(10, 0))
-        right_col.grid_propagate(False)
+        right_col.grid_columnconfigure(0, weight=1)  # ДОБАВИТЬ - чтобы содержимое растягивалось
+        right_col.grid_rowconfigure(0, weight=1)  # ДОБАВИТЬ
 
         # Блок выбора устройства
         self._create_device_section(left_col)
-
         # Блок ввода параметров
         self._create_input_section(left_col)
-
         # Блок заметок
         self._create_notes_section(right_col)
 
     def _create_device_section(self, parent):
         """Секция выбора устройства"""
         card = Card(parent, title="выбор устройства")
+        # ИСПРАВИТЬ: column=0 и настроить растяжение по горизонтали
         card.grid(row=0, column=0, sticky='ew', pady=(0, 20))
+
+        # ДОБАВИТЬ: чтобы карточка растягивалась по ширине колонки
+        parent.grid_columnconfigure(0, weight=1)
 
         options = [
             ("🔹 МР-801", "MR_801"),
@@ -83,12 +88,16 @@ class MainWindow:
 
         radio_group = RadioGroup(card.content, options)
         radio_group.value = self.selected_device
-        radio_group.pack(fill=X)
+        radio_group.pack(fill=X, expand=True)
 
     def _create_input_section(self, parent):
         """Секция ввода параметров"""
         card = Card(parent, title="параметры защиты")
+        # ИСПРАВИТЬ: column=0 и sticky='nsew' для полного растяжения
         card.grid(row=1, column=0, sticky='nsew')
+
+        # ДОБАВИТЬ: чтобы карточка растягивалась по высоте
+        parent.grid_rowconfigure(1, weight=1)
 
         # Прокручиваемая область
         scroll = ScrollableFrame(card.content)
@@ -107,7 +116,7 @@ class MainWindow:
                command=self._on_show_results).pack(side=LEFT, fill=X, expand=True, padx=(0, 5))
 
         Button(btn_frame, text="🔄 Сбросить",
-               variant="outline",
+               variant="danger",
                command=self._on_reset_values).pack(side=LEFT, fill=X, expand=True, padx=(5, 0))
 
         # Создаем поля ввода
