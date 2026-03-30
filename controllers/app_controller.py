@@ -5,6 +5,7 @@
 
 from tkinter import messagebox
 import numpy as np
+import copy
 
 from models.mr801 import MR801Device
 from models.ret521 import RET521Device
@@ -15,10 +16,6 @@ from views.results_window import ResultsWindow
 
 
 class AppController:
-    """
-    Контроллер приложения.
-    Координирует работу моделей и представлений.
-    """
 
     def __init__(self, root):
         """
@@ -39,41 +36,61 @@ class AppController:
 
     def _init_devices(self):
         """Инициализация всех устройств"""
-        # Создаем копии словарей, чтобы не изменять оригиналы
-        import copy
-        self.devices['MR_801'] = MR801Device(copy.deepcopy(DeviceConstants.MR801_DEFAULTS))
-        self.devices['RET_521_HV'] = RET521Device('RET_521_HV', copy.deepcopy(DeviceConstants.RET521_HV_DEFAULTS))
-        self.devices['RET_521_LV'] = RET521Device('RET_521_LV', copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS))
-        self.devices['RET_670_HV'] = RET670Device('RET_670_HV', copy.deepcopy(DeviceConstants.RET670_HV_DEFAULTS))
-        self.devices['RET_670_LV'] = RET670Device('RET_670_LV', copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS))
+
+        self.devices['MR_801'] = MR801Device(
+            device_type='MR_801',
+            default_params=copy.deepcopy(DeviceConstants.MR801_DEFAULTS)
+        )
+
+        self.devices['RET_521_HV'] = RET521Device(
+            device_type='RET_521_HV',
+            default_params=copy.deepcopy(DeviceConstants.RET521_HV_DEFAULTS)
+        )
+
+        self.devices['RET_521_LV'] = RET521Device(
+            device_type='RET_521_LV',
+            default_params=copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS)
+        )
+
+        self.devices['RET_670_HV'] = RET670Device(
+            device_type='RET_670_HV',
+            default_params=copy.deepcopy(DeviceConstants.RET670_HV_DEFAULTS)
+        )
+
+        self.devices['RET_670_LV'] = RET670Device(
+            device_type='RET_670_LV',
+            default_params=copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS)
+        )
+
         self.current_device = self.devices['MR_801']
+
+    def _prepare_device(self, device_type, params):
+        """Подготовка устройства: получение, конвертация параметров, обновление"""
+        device = self.devices[device_type]
+        numeric_params = device.numeric_params(params)
+        device.update_params(numeric_params)
+        return device, numeric_params
 
     def _init_main_window(self):
         """Инициализация главного окна"""
         self.main_window = MainWindow(self.root, self)
-        # После создания окна, сразу создаем поля ввода
-        self.root.after(100,
-                        self.main_window._create_input_fields)  # Изменено: self.root.after вместо self.main_window.after
+        self.root.after(100, self.main_window._create_input_fields)
 
     def set_device(self, device_type):
         """
         Установка текущего устройства.
-        device_type: Тип устройства
         """
         if device_type in self.devices:
             self.current_device = self.devices[device_type]
+
             # Обновляем параметры текущего устройства в главном окне
-            self.main_window.current_params = self.current_device.current_params.copy()
+            if hasattr(self, 'main_window'):
+                self.main_window.current_params = self.current_device.current_params.copy()
+
 
     def get_default_params(self, device_type):
         """
         Получение параметров по умолчанию для устройства.
-
-        Args:
-            device_type: Тип устройства
-
-        Returns:
-            Словарь с параметрами по умолчанию
         """
         return self.devices[device_type].default_params.copy()
 
@@ -81,10 +98,6 @@ class AppController:
     def update_device_params(self, device_type, params):
         """
         Обновление параметров устройства.
-
-        Args:
-            device_type: Тип устройства
-            params: Новые параметры
         """
         self.devices[device_type].update_params(params)
 
@@ -92,106 +105,59 @@ class AppController:
         """
         Расчет токов для таблицы результатов.
         """
-        print(f"\n🔍 Controller.calculate_currents_full: device_type = '{device_type}'")  # ДОБАВИТЬ
-        print(f"   Доступные устройства: {list(self.devices.keys())}")  # ДОБАВИТЬ
-
-        if device_type not in self.devices:
-            print(f"   ❌ ОШИБКА: устройство '{device_type}' не найдено!")  # ДОБАВИТЬ
-            return {}
-
         device = self.devices[device_type]
-        print(f"   ✅ Использую устройство: {device.device_type}")  # ДОБАВИТЬ
-
         numeric_params = device.numeric_params(params)
-        is_valid, error = device.validate_params(numeric_params)
-
-        if not is_valid:
-            messagebox.showerror('Ошибка ввода данных', error)
-            return {}
-
         return device.calculate_currents_full(numeric_params)
 
     def calculate_characteristic_full(self, I_brake, params, device_type):
-        """
-        Расчет характеристики срабатывания.
-
-        Args:
-            I_brake: Массив тормозных токов
-            params: Параметры для расчета
-            device_type: Тип устройства
-
-        Returns:
-            Массив дифференциальных токов
-        """
-        device = self.devices[device_type]
-        numeric_params = device.numeric_params(params)
-        device.update_params(numeric_params)
+        device, _ = self._prepare_device(device_type, params)
         return device.calculate_characteristic_full(I_brake)
 
     def get_break_points(self, params, device_type):
-        """
-        Получение точек излома характеристики.
-
-        Args:
-            params: Параметры для расчета
-            device_type: Тип устройства
-
-        Returns:
-            Кортеж (I_brake1, I_brake2, y1, y2)
-        """
-        device = self.devices[device_type]
-        numeric_params = device.numeric_params(params)
+        device, numeric_params = self._prepare_device(device_type, params)
         return device.get_break_points(numeric_params)
 
     def calculate_arbitrary_point_full(self, I_brake, params, device_type):
         """
-        Расчет произвольной точки характеристики.
-
-        Args:
-            I_brake: Тормозной ток в произвольной точке
-            params: Параметры для расчета
-            device_type: Тип устройства
-
-        Returns:
-            Кортеж (I_brake, I_diff)
+        Расчет произвольной точки по току торможения.
+        Дифференциальный ток рассчитывается по характеристике устройства.
         """
-        device = self.devices[device_type]
-        numeric_params = device.numeric_params(params)
-        device.update_params(numeric_params)
+        device, numeric_params = self._prepare_device(device_type, params)
 
-        I_brake_array = np.array([I_brake])
+        # Рассчитываем дифференциальный ток по характеристике
+        I_brake_array = np.array([float(I_brake)])
         I_diff = device.calculate_characteristic_full(I_brake_array)[0]
 
-        return {
-            'I_brake': I_brake,
-            'I_diff': I_diff
-        }
+        # Получаем базовые параметры
+        base = device._get_base_params(numeric_params)
+
+        # Рассчитываем токи ретома
+        arbitrary_result = device._calculate_arbitrary_retom(base, float(I_brake), I_diff)
+
+        # Добавляем исходные значения
+        arbitrary_result['I_brake'] = float(I_brake)
+        arbitrary_result['I_diff'] = I_diff
+
+        return arbitrary_result
 
     def get_blocking_currents(self, params, device_type, arbitrary_point=None):
-        """Получение данных блокировок через конкретное устройство"""
-        device = self.devices[device_type]
+        device, _ = self._prepare_device(device_type, params)
         numeric_params = device.numeric_params(params)
-
-        # Сначала получаем токи для расчетов
         currents = self.calculate_currents_full(params, device_type)
-
-        # Вызываем специфичный для устройства метод расчета блокировок
         return device.calculate_blocking_currents(currents, numeric_params, arbitrary_point)
 
     def show_results(self, params, device_type):
         """
         Отображение окна с результатами.
         """
-        print(f"\n🔍 Controller.show_results: device_type = '{device_type}'")  # ДОБАВИТЬ
 
         # Сохраняем параметры в устройство
         self.update_device_params(device_type, params)
-
-        # Рассчитываем произвольную точку, если есть I_arbitrary
-        if 'I_arbitrary' in params:
-            self.arbitrary_point = self.calculate_arbitrary_point_full(
-                params['I_arbitrary'], params, device_type
-            )
+        self.arbitrary_point = self.calculate_arbitrary_point_full(
+            params['I_arbitrary'],
+            params,
+            device_type
+        )
 
         # Проверяем, существует ли окно результатов
         if self.results_window and hasattr(self.results_window, 'window') and self.results_window.window:

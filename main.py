@@ -12,14 +12,14 @@ from controllers.app_controller import AppController
 
 
 def main():
-    """Точка входа в программу"""
-    # Настройка стилей matplotlib
+
+    # Настройка стилей matplotlib (импортируется из constants.py)
     AppStyles.configure_styles()
 
     # Создание главного окна
-    root = tk.Tk()  # Теперь tk определен
+    root = tk.Tk()
 
-    # Применение современной темы
+    # Применение современной темы (импортируется из theme.py)
     setup_theme(root)
 
     # Установка иконки (если есть)
@@ -31,7 +31,7 @@ def main():
     # Настройка заголовка
     root.title("📊 Расчет характеристик дифференциальных защит")
 
-    # Создание контроллера приложения
+    # Создание контроллера приложения (импортируется из app_controller.py)
     app = AppController(root)
 
     # Настройка обработчика закрытия окна

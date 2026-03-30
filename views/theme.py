@@ -97,17 +97,18 @@ def setup_theme(root):
              background=[('active', AppStyles.SECONDARY_DARK),
                         ('pressed', AppStyles.SECONDARY_DARK)])
 
-    style.configure('Outline.TButton',
-                   background='transparent',
-                   foreground=AppStyles.PRIMARY,
-                   borderwidth=2,
-                   focuscolor='none',
-                   font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
-                   padding=(AppStyles.PADDING_LG, AppStyles.PADDING_SM))
+    style.configure('Danger.TButton',
+                    background='#dc3545',  # Красный цвет
+                    foreground='white',
+                    borderwidth=0,
+                    focuscolor='none',
+                    font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD, 'bold'),
+                    padding=(AppStyles.PADDING_LG, AppStyles.PADDING_SM))
 
-    style.map('Outline.TButton',
-             background=[('active', AppStyles.PRIMARY + '10')],
-             relief=[('pressed', 'sunken')])
+    style.map('Danger.TButton',
+              background=[('active', '#c82333'),
+                          ('pressed', '#bd2130')],
+              relief=[('pressed', 'sunken')])
 
     # --- Радио-кнопки ---
     style.configure('Modern.TRadiobutton',
@@ -133,7 +134,7 @@ def setup_theme(root):
                    foreground=AppStyles.TEXT_PRIMARY,
                    fieldbackground=AppStyles.SURFACE,
                    borderwidth=0,
-                   rowheight=40,
+                   rowheight=30,
                    font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
 
     style.configure('Treeview.Heading',

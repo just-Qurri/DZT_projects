@@ -15,17 +15,23 @@ class RET670Device(ProtectionDevice):
             return {
                 'retom_hv1': round(I_brake1 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
                 'retom_lv1': round((I_brake1 - I_diff) / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
+                'retom_skvoz_hv1' : round(I_brake1 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
+                'retom_skvoz_lv1' : round(I_brake1 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
                 'retom_hv2': round(I_brake2 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
-                'retom_lv2': round(
-                    (I_brake2 - (I_diff + k1 * (I_brake2 - I_brake1))) / base['koeff_CT_LV'] * base['I_nom_lv'], 2)
+                'retom_lv2': round((I_brake2 - (I_diff + k1 * (I_brake2 - I_brake1))) / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
+                'retom_skvoz_hv2': round(I_brake2 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
+                'retom_skvoz_lv2': round(I_brake2 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
             }
         else:
             return {
                 'retom_hv1': round((I_brake1 - I_diff) / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
                 'retom_lv1': round(I_brake1 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
-                'retom_hv2': round(
-                    (I_brake2 - (I_diff + k1 * (I_brake2 - I_brake1))) / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
-                'retom_lv2': round(I_brake2 / base['koeff_CT_LV'] * base['I_nom_lv'], 2)
+                'retom_skvoz_hv1': round(I_brake1 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
+                'retom_skvoz_lv1': round(I_brake1 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
+                'retom_hv2': round((I_brake2 - (I_diff + k1 * (I_brake2 - I_brake1))) / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
+                'retom_lv2': round(I_brake2 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
+                'retom_skvoz_hv2': round(I_brake2 / base['koeff_CT_HV'] * base['I_nom_hv'], 2),
+                'retom_skvoz_lv2': round(I_brake2 / base['koeff_CT_LV'] * base['I_nom_lv'], 2),
             }
 
     def _calculate_arbitrary_retom(self, base, I_brake, I_diff):

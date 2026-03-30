@@ -23,7 +23,7 @@ class SlopeFormat(Enum):
 class ProtectionDevice(ABC):
     """Абстрактный базовый класс для устройств релейной защиты."""
 
-    def __init__(self, device_type, default_params, slope_format=SlopeFormat.RATIO):
+    def __init__(self, device_type, default_params, slope_format=SlopeFormat.RATIO, winding_side=None):
         """
         Инициализация устройства защиты.
 
@@ -36,16 +36,27 @@ class ProtectionDevice(ABC):
         self.default_params = default_params.copy()
         self.current_params = default_params.copy()
         self.slope_format = slope_format
-        self.winding_side = self._get_winding_side(device_type)
-        print(f"🔍 Создан {self.__class__.__name__}: device_type='{device_type}', side={self.winding_side}")
+        self.winding_side = winding_side or self._infer_winding_side(device_type)
+        self._base_params_cache = {}
 
+    def _infer_winding_side(self, device_type):
+        if not device_type:
+            return None
 
-    def _get_winding_side(self, device_type):
-        if device_type and "_HV" in device_type:
+        device_type_upper = device_type.upper()
+
+        if device_type_upper.endswith("_HV"):
             return WindingSide.HV
-        elif device_type and "_LV" in device_type:
+        elif device_type_upper.endswith("_LV"):
             return WindingSide.LV
+        elif "_HV_" in device_type_upper or "_HV" in device_type_upper:
+            return WindingSide.HV
+        elif "_LV_" in device_type_upper or "_LV" in device_type_upper:
+            return WindingSide.LV
+
         return None
+
+
 
     # ============ ОБЩИЕ УТИЛИТЫ ============
 
@@ -67,28 +78,43 @@ class ProtectionDevice(ABC):
             return value
 
     def _get_base_params(self, params):
-        """Базовые параметры трансформатора (один раз для всех расчетов)"""
-        S_nom = params['S_nom'] * 1e6
-        sqrt3 = np.sqrt(3)
-        U_hv = float(params['U_hv'])
-        U_lv = float(params['U_lv'])
+        # Создаем ключ кэша из релевантных параметров
+        cache_key = (
+            params.get('S_nom'),
+            params.get('U_hv'),
+            params.get('U_lv'),
+            params.get('CT_hv_perv'),
+            params.get('CT_hv_sec'),
+            params.get('CT_lv_perv'),
+            params.get('CT_lv_sec')
+        )
 
-        I_nom_hv = S_nom / (sqrt3 * U_hv * 1e3)
-        I_nom_lv = S_nom / (sqrt3 * U_lv * 1e3)
+        if cache_key not in self._base_params_cache:
+            """Базовые параметры трансформатора (один раз для всех расчетов)"""
+            S_nom = float(params['S_nom']) * 1e6
+            sqrt3 = np.sqrt(3)
+            U_hv = float(params['U_hv'])
+            U_lv = float(params['U_lv'])
 
-        koeff_CT_HV = params['CT_hv_perv'] / params['CT_hv_sec']
-        koeff_CT_LV = params['CT_lv_perv'] / params['CT_lv_sec']
+            I_nom_hv = S_nom / (sqrt3 * U_hv * 1e3)
+            I_nom_lv = S_nom / (sqrt3 * U_lv * 1e3)
 
-        return {
-            'U_hv': U_hv,
-            'U_lv': U_lv,
-            'I_nom_hv': I_nom_hv,
-            'I_nom_lv': I_nom_lv,
-            'koeff_CT_HV': koeff_CT_HV,
-            'koeff_CT_LV': koeff_CT_LV,
-            'I_sec_hv': I_nom_hv / koeff_CT_HV,
-            'I_sec_lv': I_nom_lv / koeff_CT_LV
-        }
+            koeff_CT_HV = float(params['CT_hv_perv']) / float(params['CT_hv_sec'])
+            koeff_CT_LV = float(params['CT_lv_perv']) / float(params['CT_lv_sec'])
+
+            result = {
+                'U_hv': float(f"{U_hv:.2f}"),
+                'U_lv': float(f"{U_lv:.2f}"),
+                'I_nom_hv': float(f"{I_nom_hv:.2f}"),
+                'I_nom_lv': float(f"{I_nom_lv:.2f}"),
+                'koeff_CT_HV': float(f"{koeff_CT_HV:.2f}"),
+                'koeff_CT_LV': float(f"{koeff_CT_LV:.2f}"),
+                'I_sec_hv': float(f"{I_nom_hv / koeff_CT_HV:.2f}"),
+                'I_sec_lv': float(f"{I_nom_lv / koeff_CT_LV:.2f}")
+            }
+            self._base_params_cache[cache_key] = result
+
+        return self._base_params_cache[cache_key].copy()
 
     def _get_char_params(self, params):
         """
@@ -132,17 +158,9 @@ class ProtectionDevice(ABC):
     # ============ ТОКИ РЕТОМА (универсальный метод) ============
 
     def calculate_currents_full(self, params):
-        print(f"\n{'=' * 50}")
-        print(f"calculate_currents_full для {self.device_type}")
-        print(f"self.winding_side = {self.winding_side}")
 
         base = self._get_base_params(params)
         p = self._get_char_params(params)
-
-        print(f"p['I_brake1'] = {p['I_brake1']}")
-        print(f"p['I_brake2'] = {p['I_brake2']}")
-        print(f"p['I_diff'] = {p['I_diff']}")
-        print(f"p['k1'] = {p['k1']}")
 
         # Дифференциальные токи
         Id_hv = p['I_diff'] * base['I_nom_hv'] / base['koeff_CT_HV']
@@ -181,11 +199,21 @@ class ProtectionDevice(ABC):
         ]
 
         if arbitrary_point:
-            base = self._get_base_params(params)
-            block = self._get_blocking_for_point(base, arbitrary_point['I_brake'], is_hv, params)
+            # Для произвольной точки используем I_diff для расчета блокировок
+            I_diff = arbitrary_point.get('I_diff', 0)
+
+            # Рассчитываем ток блокировки для произвольной точки
+            base = self._get_base_params(self.current_params)
+            if is_hv:
+                current_arb = I_diff * base['I_nom_hv'] / base['koeff_CT_HV']
+            else:
+                current_arb = I_diff * base['I_nom_lv'] / base['koeff_CT_LV']
+
             data.extend([
-                ("Блокировка I2/I1 (произвольная точка)", block['I2'], params['I2/I1']),
-                ("Блокировка I5/I1 (произвольная точка)", block['I5'], params['I5/I1'])
+                ("Блокировка I2/I1 (произвольная точка)",
+                 f"{params['I2/I1'] / 100 * current_arb:.2f}", params['I2/I1']),
+                ("Блокировка I5/I1 (произвольная точка)",
+                 f"{params['I5/I1'] / 100 * current_arb:.2f}", params['I5/I1'])
             ])
 
         return data
@@ -200,11 +228,6 @@ class ProtectionDevice(ABC):
     @abstractmethod
     def _calculate_arbitrary_retom(self, base, I_brake, I_diff):
         """Расчет токов ретома для произвольной точки"""
-        pass
-
-    @abstractmethod
-    def _get_blocking_for_point(self, base, I_brake, is_hv_side, params):
-        """Расчет блокировок для произвольной точки"""
         pass
 
     # ============ ВСПОМОГАТЕЛЬНЫЕ ============
