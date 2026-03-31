@@ -124,7 +124,7 @@ class ResultsWindow:
     def _on_refresh(self):
         """Обновление окна результатов"""
         if self.current_data:
-            self._display_results(
+            self.update_results(
                 self.current_data['params'],
                 self.current_data['device_type'],
                 self.current_data.get('arbitrary_point')
@@ -178,6 +178,11 @@ class ResultsWindow:
     def _display_results(self, params, device_type, arbitrary_point):
         """Отображение результатов"""
         # Сохраняем текущие данные
+
+        if hasattr(self, 'scrollable_frame') and self.scrollable_frame:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+
         self.current_data = {
             'params': params,
             'device_type': device_type,
@@ -460,6 +465,10 @@ class ResultsWindow:
         if self.scrollable_frame:
             for widget in self.scrollable_frame.winfo_children():
                 widget.destroy()
+
+            if self.figure:
+                plt.close(self.figure)
+                self.figure = None
 
         # Заново отображаем результаты
         self._display_results(params, device_type, arbitrary_point)
