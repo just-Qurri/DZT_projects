@@ -193,7 +193,8 @@ class ResultsWindow:
         )
         currents['retom_hv_arb'] = arbitrary_currents['retom_hv_arb']
         currents['retom_lv_arb'] = arbitrary_currents['retom_lv_arb']
-        currents['retom_skvoz_arb'] = arbitrary_currents['retom_skvoz_arb']
+        currents['retom_skvoz_arb_hv'] = arbitrary_currents['retom_skvoz_arb_hv']
+        currents['retom_skvoz_arb_lv'] = arbitrary_currents['retom_skvoz_arb_lv']
 
 
         # Получаем точки излома
@@ -244,8 +245,7 @@ class ResultsWindow:
              currents['retom_skvoz_lv2']),
             ("Вторичный ток РЕТОМ-61 в произвольной точке (режим работы ДЗТ), А", currents['retom_hv_arb'],
              currents['retom_lv_arb']),
-            ("Вторичный ток РЕТОМ-61 в произвольной точке (сквозное КЗ), А", currents['retom_hv_arb'],
-             currents['retom_skvoz_arb']),
+            ("Вторичный ток РЕТОМ-61 в произвольной точке (сквозное КЗ), А", currents['retom_skvoz_arb_hv'], currents['retom_skvoz_arb_lv'])
         ]
 
         self._create_table(
@@ -440,7 +440,7 @@ class ResultsWindow:
         ax.plot([0, I_brake_point], [I_diff_point, I_diff_point], 'k--', alpha=1, linewidth=1.5)
 
         # Корректируем позиции подписей с учетом новых пределов
-        x_pos = I_brake_point * 1.01 if I_brake_point < max_x * 0.9 else I_brake_point * 0.7
+        x_pos = I_brake_point * 1.01 if I_brake_point < max_x * 1.01 else I_brake_point * 1.01
         ax.text(x_pos, 0, f'$I_{{\\text{{t}}}}$ = {I_brake_point:.2f}', **label_style, ha='left', va='bottom')
 
         y_pos = I_diff_point * 1.01 if I_diff_point < ax.get_ylim()[1] * 0.9 else I_diff_point * 0.9

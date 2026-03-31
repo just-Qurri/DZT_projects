@@ -76,13 +76,15 @@ class RET521Device(ProtectionDevice):
             return {
                 'retom_hv_arb': f"{I_brake * base['I_nom_hv'] / base['koeff_CT_HV']:.2f}",
                 'retom_lv_arb': f"{(I_brake - I_diff) * base['I_nom_lv'] / base['koeff_CT_LV']:.2f}",
-                'retom_skvoz_arb': f"{I_brake * base['I_nom_hv'] * base['U_hv'] / base['U_lv'] / base['koeff_CT_LV']:.2f}"
+                'retom_skvoz_arb_hv': f"{I_brake * base['I_nom_hv'] / base['koeff_CT_HV']:.2f}",
+                'retom_skvoz_arb_lv': f"{I_brake * base['I_nom_lv'] / base['koeff_CT_LV']:.2f}"
             }
         else:
             return {
                 'retom_hv_arb': f"{(I_brake - I_diff) * base['I_nom_hv'] / base['koeff_CT_HV']:.2f}",
                 'retom_lv_arb': f"{I_brake * base['I_nom_lv'] / base['koeff_CT_LV']:.2f}",
-                'retom_skvoz_arb': f"{(I_brake - I_diff) * base['I_nom_hv'] * base['U_hv'] / base['U_lv'] / base['koeff_CT_LV']:.2f}"
+                'retom_skvoz_arb_hv': f"{I_brake * base['I_nom_hv']  / base['koeff_CT_HV']:.2f}",
+                'retom_skvoz_arb_lv': f"{I_brake * base['I_nom_lv']  / base['koeff_CT_LV']:.2f}"
             }
 
     def _get_blocking_for_point(self, base, I_brake, is_hv_side, params):

@@ -200,7 +200,7 @@ class ProtectionDevice(ABC):
 
         if arbitrary_point:
             # Для произвольной точки используем I_diff для расчета блокировок
-            I_diff = arbitrary_point.get('I_diff', 0)
+            I_diff = arbitrary_point.get('I_diff')
 
             # Рассчитываем ток блокировки для произвольной точки
             base = self._get_base_params(self.current_params)
