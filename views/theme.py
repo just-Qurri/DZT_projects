@@ -163,4 +163,59 @@ def setup_theme(root):
                    foreground=AppStyles.TEXT_PRIMARY,
                    background=AppStyles.BACKGROUND)
 
+    style.configure('Modern.TCombobox',
+                    fieldbackground=AppStyles.SURFACE,
+                    background=AppStyles.SURFACE,
+                    foreground=AppStyles.TEXT_PRIMARY,
+                    selectbackground=AppStyles.PRIMARY,
+                    selectforeground='white',
+                    borderwidth=1,
+                    relief='solid',
+                    bordercolor=AppStyles.BORDER,
+                    arrowsize=15,
+                    font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
+
+    style.map('Modern.TCombobox',
+              fieldbackground=[('readonly', AppStyles.SURFACE),
+                               ('focus', AppStyles.SURFACE)],
+              foreground=[('readonly', AppStyles.TEXT_PRIMARY),
+                          ('focus', AppStyles.TEXT_PRIMARY)],
+              selectbackground=[('focus', AppStyles.PRIMARY)],
+              selectforeground=[('focus', 'white')],
+              bordercolor=[('focus', AppStyles.PRIMARY)],
+              lightcolor=[('focus', AppStyles.PRIMARY)],
+              darkcolor=[('focus', AppStyles.PRIMARY)])
+
+    # Стиль для стрелки Combobox
+    style.configure('TCombobox.arrow',
+                    background=AppStyles.SURFACE_VARIANT,
+                    foreground=AppStyles.TEXT_SECONDARY)
+
+    style.map('TCombobox.arrow',
+              background=[('pressed', AppStyles.PRIMARY_LIGHT),
+                          ('active', AppStyles.PRIMARY_LIGHT)],
+              foreground=[('pressed', AppStyles.PRIMARY),
+                          ('active', AppStyles.PRIMARY)])
+
+    # Стиль для выпадающего списка
+    root.option_add('*TCombobox*Listbox.font',
+                    (AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
+    root.option_add('*TCombobox*Listbox.background', AppStyles.SURFACE)
+    root.option_add('*TCombobox*Listbox.foreground', AppStyles.TEXT_PRIMARY)
+    root.option_add('*TCombobox*Listbox.selectBackground', AppStyles.PRIMARY)
+    root.option_add('*TCombobox*Listbox.selectForeground', 'white')
+    root.option_add('*TCombobox*Listbox.borderWidth', 0)
+    root.option_add('*TCombobox*Listbox.relief', 'flat')
+
+    # Убираем фокус с Combobox
+    style.layout('Modern.TCombobox',
+                 [('Combobox.field',
+                   {'children':
+                        [('Combobox.downarrow', {'side': 'right', 'sticky': 'ns'}),
+                         ('Combobox.padding',
+                          {'expand': '1', 'sticky': 'nswe',
+                           'children':
+                               [('Combobox.textarea', {'sticky': 'nswe'})]})],
+                    'sticky': 'nswe'})])
+
     return style

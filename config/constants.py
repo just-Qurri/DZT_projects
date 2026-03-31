@@ -49,7 +49,7 @@ class AppStyles:
     FONT_SIZE_XS = 10
     FONT_SIZE_SM = 11
     FONT_SIZE_MD = 12
-    FONT_SIZE_LG = 14
+    FONT_SIZE_LG = 16
     FONT_SIZE_XL = 18
 
     # Размеры

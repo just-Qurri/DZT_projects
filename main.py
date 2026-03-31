@@ -2,7 +2,7 @@
 Главный модуль программы для расчета характеристик дифференциальных защит трансформаторов.
 """
 
-import tkinter as tk  # Добавьте эту строку
+import tkinter as tk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 
@@ -22,7 +22,7 @@ def main():
     # Применение современной темы (импортируется из theme.py)
     setup_theme(root)
 
-    # Установка иконки (если есть)
+    # Установка иконки
     try:
         root.iconbitmap('icon.ico')
     except:

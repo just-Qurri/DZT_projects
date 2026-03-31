@@ -78,6 +78,17 @@ class MainWindow:
         if device_type and params:
             if device_type in DeviceConstants.DEFAULTS_BY_DEVICE:
                 self.selected_device.set(device_type)
+
+                # Обновляем комбобокс
+                reverse_mapping = {
+                    "MR_801": "МР-801",
+                    "RET_521_HV": "RET-521 (ОПОРА ВН)",
+                    "RET_521_LV": "RET-521 (ОПОРА НН)",
+                    "RET_670_HV": "RET-670 (ОПОРА ВН)",
+                    "RET_670_LV": "RET-670 (ОПОРА НН)"
+                }
+                self.device_combo.set(reverse_mapping.get(device_type, "МР-801"))
+
                 for param, value in params.items():
                     if param in self.entries:
                         self.entries[param].set(str(value))
@@ -142,7 +153,7 @@ class MainWindow:
         about_text = """
 Расчет характеристик дифференциальных защит
     
-Версия: 1.1
+Версия: 1.05
 
 Программа предназначена для расчета и визуализации 
 тормозных характеристик дифференциальных защит 
@@ -200,24 +211,40 @@ class MainWindow:
         card.grid(row=0, column=0, sticky='ew', pady=(0, 20))
         parent.grid_columnconfigure(0, weight=1)
 
-        options = [
-            ("🔹 МР-801", "MR_801"),
-            ("🔹 RET-521 (ОПОРА ВН)", "RET_521_HV"),
-            ("🔹 RET-521 (ОПОРА НН)", "RET_521_LV"),
-            ("🔹 RET-670 (ОПОРА ВН)", "RET_670_HV"),
-            ("🔹 RET-670 (ОПОРА НН)", "RET_670_LV")
+        # Создаем выпадающий список
+        device_frame = ttk.Frame(card.content)
+        device_frame.pack(fill=X, pady=5)
+
+        label = ttk.Label(device_frame, text="Тип устройства:",
+                          font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_LG))
+        label.pack(side=LEFT, padx=(0, 10))
+
+        device_options = [
+            "МР-801",
+            "RET-521 (ОПОРА ВН)",
+            "RET-521 (ОПОРА НН)",
+            "RET-670 (ОПОРА ВН)",
+            "RET-670 (ОПОРА НН)"
         ]
 
-        for text, value in options:
-            rb = ttk.Radiobutton(
-                card.content,
-                text=text,
-                variable=self.selected_device,
-                value=value,
-                style='Modern.TRadiobutton',
-                command=self._on_device_change
-            )
-            rb.pack(anchor=W, pady=4, fill=X)
+        self.device_combo = ttk.Combobox(device_frame,
+                                         values=device_options,
+                                         state="readonly",
+                                         width=35,
+                                         font=(AppStyles.FONT_FAMILY, AppStyles.FONT_SIZE_MD))
+        self.device_combo.pack(side=LEFT, fill=X, expand=True)
+
+        # Устанавливаем значение по умолчанию
+        self.device_combo.set("МР-801")
+
+        # Привязываем события
+        self.device_combo.bind('<<ComboboxSelected>>', self._on_device_change)
+
+        # Убираем выделение
+        self.device_combo.selection_clear()
+
+        # Убираем фокус при загрузке
+        self.root.after(100, lambda: self.root.focus_set())
 
     def _create_input_section(self, parent):
         """Секция ввода параметров с сеткой 2 колонки"""
@@ -347,15 +374,34 @@ class MainWindow:
         except ValueError:
             pass
 
-    def _on_device_change(self):
+    def _on_device_change(self, event=None):
         """Обработчик смены устройства"""
         try:
-            device_type = self.selected_device.get()
+            # Маппинг названий из комбобокса в значения для контроллера
+            device_mapping = {
+                "МР-801": "MR_801",
+                "RET-521 (ОПОРА ВН)": "RET_521_HV",
+                "RET-521 (ОПОРА НН)": "RET_521_LV",
+                "RET-670 (ОПОРА ВН)": "RET_670_HV",
+                "RET-670 (ОПОРА НН)": "RET_670_LV"
+            }
+
+            selected_text = self.device_combo.get()
+            device_type = device_mapping.get(selected_text, "MR_801")
+            self.selected_device.set(device_type)
+
             self.controller.set_device(device_type)
             self._create_input_fields()
             if hasattr(self, 'arbitrary_field'):
                 self.arbitrary_field.set("2.5")
             self._update_notes()
+
+            # Убираем выделение текста в комбобоксе
+            self.device_combo.selection_clear()
+
+            # Убираем фокус с комбобокса
+            self.root.focus_set()
+
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
 

@@ -385,8 +385,11 @@ class ResultsWindow:
         ax.set_title(f'Тормозная характеристика {device_name}', fontsize=12, pad=10)
         ax.set_xlabel(r'Ток торможения, $I_{\text{торм}}$ [$I_{\text{ном}}$]', fontsize=11, labelpad=5)
         ax.set_ylabel(r'Ток срабатывания, $I_{\text{дифф}}$ [$I_{\text{ном}}$]', fontsize=11, labelpad=5)
-        ax.grid(True, linestyle='--', alpha=0.6)
-        ax.legend(loc='upper left', fontsize=10, framealpha=1)
+
+        # Настройка сетки - более заметная
+        ax.grid(True, which='both', linestyle='-', linewidth=0.5, alpha=0.7, color='gray')
+        ax.grid(True, which='minor', linestyle=':', linewidth=0.3, alpha=0.5)
+        ax.minorticks_on()  # Включаем minor деления
 
         # Устанавливаем пределы с учетом произвольной точки
         ax.set_xlim(0, max_x)
