@@ -183,18 +183,23 @@ class ResultsFileHandler:
                 for row in blocking_data:
                     f.write(f"{row[0]}: {row[1]} А (уставка: {row[2]}%)\n")
 
-                # Произвольная точка
                 if arbitrary_point:
                     f.write("\n6. ПРОИЗВОЛЬНАЯ ТОЧКА\n")
                     f.write("-" * 80 + "\n")
                     f.write(f"Ток торможения: {arbitrary_point['I_brake']:.2f} Iном\n")
                     f.write(f"Дифференциальный ток: {arbitrary_point['I_diff']:.2f} Iном\n")
 
-                    if 'retom_hv_arb' in arbitrary_point:
-                        f.write(f"Ток РЕТОМ-61 ВН: {arbitrary_point['retom_hv_arb']:.2f} А\n")
-                    if 'retom_lv_arb' in arbitrary_point:
-                        f.write(f"Ток РЕТОМ-61 НН: {arbitrary_point['retom_lv_arb']:.2f} А\n")
-                    if 'retom_skvoz_arb' in arbitrary_point:
+                    # Получаем токи РЕТОМ для произвольной точки
+                    # Сначала проверяем, есть ли уже рассчитанные значения в arbitrary_point
+                    if 'retom_hv_arb' in arbitrary_point and 'retom_lv_arb' in arbitrary_point:
+                        f.write(f"Ток РЕТОМ-61 ВН (ДЗТ): {arbitrary_point['retom_hv_arb']:.2f} А\n")
+                        f.write(f"Ток РЕТОМ-61 НН (ДЗТ): {arbitrary_point['retom_lv_arb']:.2f} А\n")
+
+                    # Если есть токи для сквозного КЗ
+                    if 'retom_skvoz_arb_hv' in arbitrary_point and 'retom_skvoz_arb_lv' in arbitrary_point:
+                        f.write(f"Ток РЕТОМ-61 ВН (сквозное КЗ): {arbitrary_point['retom_skvoz_arb_hv']:.2f} А\n")
+                        f.write(f"Ток РЕТОМ-61 НН (сквозное КЗ): {arbitrary_point['retom_skvoz_arb_lv']:.2f} А\n")
+                    elif 'retom_skvoz_arb' in arbitrary_point:
                         f.write(f"Ток РЕТОМ-61 сквозной: {arbitrary_point['retom_skvoz_arb']:.2f} А\n")
 
                 f.write("\n" + "=" * 80 + "\n")

@@ -77,24 +77,49 @@ class MainWindow:
 
         if device_type and params:
             if device_type in DeviceConstants.DEFAULTS_BY_DEVICE:
-                self.selected_device.set(device_type)
-
-                # Обновляем комбобокс
-                reverse_mapping = {
+                # Маппинг для отображения в комбобоксе
+                display_mapping = {
                     "MR_801": "МР-801",
                     "RET_521_HV": "RET-521 (ОПОРА ВН)",
                     "RET_521_LV": "RET-521 (ОПОРА НН)",
                     "RET_670_HV": "RET-670 (ОПОРА ВН)",
                     "RET_670_LV": "RET-670 (ОПОРА НН)",
                     "SPAC810T_HV": "SPAC810-T (ОПОРА ВН)",
-                    "SPAC810T_LV": "SPAC810-T  (ОПОРА НН)"
+                    "SPAC810T_LV": "SPAC810-T (ОПОРА НН)"
                 }
-                self.device_combo.set(reverse_mapping.get(device_type, "МР-801"))
 
+                # Устанавливаем значение в комбобокс
+                display_value = display_mapping.get(device_type, "МР-801")
+                self.device_combo.set(display_value)
+
+                # Обновляем выбранное устройство в переменной
+                self.selected_device.set(device_type)
+
+                # Обновляем контроллер и полностью пересоздаем поля
+                self.controller.set_device(device_type)
+                self._create_input_fields()
+
+                # Заполняем параметры из файла
                 for param, value in params.items():
                     if param in self.entries:
                         self.entries[param].set(str(value))
                         self.controller.update_device_params(device_type, {param: value})
+
+                # Обновляем заметки
+                self._update_notes()
+
+                # Сбрасываем произвольную точку (опционально)
+                if hasattr(self, 'arbitrary_field'):
+                    self.arbitrary_field.set("2.5")
+
+                # Убираем выделение в комбобоксе
+                self.device_combo.selection_clear()
+
+                # Убираем фокус с комбобокса
+                self.root.focus_set()
+
+                # Дополнительно: принудительно обновляем интерфейс
+                self.root.update_idletasks()
             else:
                 messagebox.showerror("Ошибка", f"Неизвестный тип устройства: {device_type}")
 
@@ -188,8 +213,8 @@ class MainWindow:
         main = ttk.Frame(self.root, style='Card.TFrame')
         main.grid(row=0, column=0, sticky='nsew', padx=20, pady=20)
 
-        main.grid_columnconfigure(0, weight=88)
-        main.grid_columnconfigure(1, weight=12)
+        main.grid_columnconfigure(0, weight=85)
+        main.grid_columnconfigure(1, weight=15)
         main.grid_rowconfigure(0, weight=1)
 
         left_col = ttk.Frame(main)

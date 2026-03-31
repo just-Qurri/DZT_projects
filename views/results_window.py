@@ -183,53 +183,54 @@ class ResultsWindow:
             for widget in self.scrollable_frame.winfo_children():
                 widget.destroy()
 
-        self.current_data = {
-            'params': params,
-            'device_type': device_type,
-            'arbitrary_point': arbitrary_point
-        }
-
         currents = self.controller.calculate_currents_full(params, device_type)
-        self.current_data['currents'] = currents
         arbitrary_currents = self.controller.calculate_arbitrary_point_full(
             arbitrary_point['I_brake'],
             params,
             device_type
         )
+
+        arbitrary_point_with_currents = {
+            **arbitrary_point,
+            'retom_hv_arb': arbitrary_currents.get('retom_hv_arb', 0),
+            'retom_lv_arb': arbitrary_currents.get('retom_lv_arb', 0),
+            'retom_skvoz_arb_hv': arbitrary_currents.get('retom_skvoz_arb_hv', 0),
+            'retom_skvoz_arb_lv': arbitrary_currents.get('retom_skvoz_arb_lv', 0)
+        }
+
         currents['retom_hv_arb'] = arbitrary_currents['retom_hv_arb']
         currents['retom_lv_arb'] = arbitrary_currents['retom_lv_arb']
         currents['retom_skvoz_arb_hv'] = arbitrary_currents['retom_skvoz_arb_hv']
         currents['retom_skvoz_arb_lv'] = arbitrary_currents['retom_skvoz_arb_lv']
 
-
-        # Получаем точки излома
         I_brake1, I_brake2, y1, y2, k1, k2 = self.controller.get_break_points(params, device_type)
-        self.current_data['break_points'] = (I_brake1, I_brake2, y1, y2, k1, k2)
-
-        # Получаем данные блокировок
         blocking_data = self.controller.get_blocking_currents(params, device_type, arbitrary_point)
-        self.current_data['blocking_data'] = blocking_data
 
         # Создание контейнера для таблиц и графика
         container = ttk.Frame(self.scrollable_frame)
         container.pack(fill="both", expand=True)
 
-        # Левая панель - таблицы (устанавливаем фиксированную ширину)
         left_panel = ttk.Frame(container)
         left_panel.pack(side="left", fill="y", padx=(0, 10))
 
-        # Правая панель - график (занимает все оставшееся пространство)
         right_panel = ttk.Frame(container)
         right_panel.pack(side="right", fill="both", expand=True, padx=(0, 0))
 
-        # Создание таблиц
         self._create_table1(left_panel, params, currents, device_type)
         self._create_table2(left_panel, I_brake1, I_brake2, y1, y2, arbitrary_point)
         self._create_table3(left_panel, k1, k2)
         self._create_table4(left_panel, blocking_data)
-
-        # Создание графика
         self._create_plot(right_panel, params, device_type, I_brake1, y1, I_brake2, y2, k1, k2, arbitrary_point)
+
+        # Оставляем только это создание self.current_data
+        self.current_data = {
+            'params': params,
+            'device_type': device_type,
+            'currents': currents,
+            'break_points': (I_brake1, I_brake2, y1, y2, k1, k2),
+            'blocking_data': blocking_data,
+            'arbitrary_point': arbitrary_point_with_currents
+        }
 
     def _create_table1(self, parent, params, currents, device_type):
         """Создание таблицы с основными параметрами"""
@@ -242,15 +243,18 @@ class ResultsWindow:
              f"{currents['I_sec_lv']:.2f}"),
             ("Вторичный ток РЕТОМ-61 в одно плечо (ВН), А", f"{currents['Id_hv']:.2f}", "0.00"),
             ("Вторичный ток РЕТОМ-61 в одно плечо (НН), А", "0.00", f"{currents['Id_lv']:.2f}"),
-            ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", currents['retom_hv1'], currents['retom_lv1']),
-            ("Вторичный ток РЕТОМ-61 (т.1) (режим сквозного КЗ), А", currents['retom_skvoz_hv1'],
-             currents['retom_skvoz_lv1']),
-            ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", currents['retom_hv2'], currents['retom_lv2']),
-            ("Вторичный ток РЕТОМ-61 (т.2) (режим сквозного КЗ), А", currents['retom_skvoz_hv2'],
-             currents['retom_skvoz_lv2']),
-            ("Вторичный ток РЕТОМ-61 в произвольной точке (режим работы ДЗТ), А", currents['retom_hv_arb'],
-             currents['retom_lv_arb']),
-            ("Вторичный ток РЕТОМ-61 в произвольной точке (сквозное КЗ), А", currents['retom_skvoz_arb_hv'], currents['retom_skvoz_arb_lv'])
+            ("Вторичный ток РЕТОМ-61 (т.1) (режим работы ДЗТ), А", f"{currents['retom_hv1']:.2f}",
+             f"{currents['retom_lv1']:.2f}"),
+            ("Вторичный ток РЕТОМ-61 (т.1) (режим сквозного КЗ), А", f"{currents['retom_skvoz_hv1']:.2f}",
+             f"{currents['retom_skvoz_lv1']:.2f}"),
+            ("Вторичный ток РЕТОМ-61 (т.2) (режим работы ДЗТ), А", f"{currents['retom_hv2']:.2f}",
+             f"{currents['retom_lv2']:.2f}"),
+            ("Вторичный ток РЕТОМ-61 (т.2) (режим сквозного КЗ), А", f"{currents['retom_skvoz_hv2']:.2f}",
+             f"{currents['retom_skvoz_lv2']:.2f}"),
+            ("Вторичный ток РЕТОМ-61 в произвольной точке (режим работы ДЗТ), А", f"{currents['retom_hv_arb']:.2f}",
+             f"{currents['retom_lv_arb']:.2f}"),
+            ("Вторичный ток РЕТОМ-61 в произвольной точке (сквозное КЗ), А", f"{currents['retom_skvoz_arb_hv']:.2f}",
+             f"{currents['retom_skvoz_arb_lv']:.2f}")
         ]
 
         self._create_table(

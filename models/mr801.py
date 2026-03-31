@@ -15,24 +15,24 @@ class MR801Device(ProtectionDevice):
         I_diff_at_2 = I_diff + k1 * (I_brake2 - I_brake1)
 
         return {
-            'retom_hv1': f"{(I_brake1 + I_diff) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']:.2f}",
-            'retom_lv1': f"{(I_brake1 - I_diff) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']:.2f}",
-            'retom_skvoz_hv1': f"{(I_brake1 + I_diff) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']:.2f}",
-            'retom_skvoz_lv1':f"{(I_brake1 + I_diff) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']:.2f}",
-            'retom_hv2': f"{(I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']:.2f}",
-            'retom_lv2': f"{(I_brake2 - I_diff_at_2) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']:.2f}",
-            'retom_skvoz_hv2': f"{(I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']:.2f}",
-            'retom_skvoz_lv2': f"{(I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']:.2f}",
+            'retom_hv1': ((I_brake1 + I_diff) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']),
+            'retom_lv1': ((I_brake1 - I_diff) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']),
+            'retom_skvoz_hv1': ((I_brake1 + I_diff) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']),
+            'retom_skvoz_lv1': ((I_brake1 + I_diff) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']),
+            'retom_hv2': ((I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']),
+            'retom_lv2': ((I_brake2 - I_diff_at_2) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']),
+            'retom_skvoz_hv2': ((I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_HV'] * base['I_nom_hv']),
+            'retom_skvoz_lv2': ((I_brake2 + I_diff_at_2) / 2 / base['koeff_CT_LV'] * base['I_nom_lv']),
         }
 
     def _calculate_arbitrary_retom(self, base, I_brake, I_diff):
         I_brake = float(I_brake)
         I_diff = float(I_diff)
         return {
-            'retom_hv_arb': f"{((I_brake + I_diff) * base['I_nom_hv'] / 2 / base['koeff_CT_HV']):.2f}",
-            'retom_lv_arb': f"{((I_brake - I_diff) * base['I_nom_lv'] / 2 / base['koeff_CT_LV']):.2f}",
-            'retom_skvoz_arb_hv': f"{((I_brake + I_diff) * base['I_nom_hv']  / 2 / base['koeff_CT_HV']):.2f}",
-            'retom_skvoz_arb_lv': f"{((I_brake + I_diff) * base['I_nom_lv']  / 2 / base['koeff_CT_LV']):.2f}"
+            'retom_hv_arb': ((I_brake + I_diff) * base['I_nom_hv'] / 2 / base['koeff_CT_HV']),
+            'retom_lv_arb': ((I_brake - I_diff) * base['I_nom_lv'] / 2 / base['koeff_CT_LV']),
+            'retom_skvoz_arb_hv': ((I_brake + I_diff) * base['I_nom_hv'] / 2 / base['koeff_CT_HV']),
+            'retom_skvoz_arb_lv': ((I_brake + I_diff) * base['I_nom_lv'] / 2 / base['koeff_CT_LV'])
         }
 
 
