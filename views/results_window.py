@@ -350,8 +350,8 @@ class ResultsWindow:
             "MR_801": "МР-801",
             "RET_521_HV": "RET-521 (ВН)",
             "RET_521_LV": "RET-521 (НН)",
-            "RET_670_HV": "RET-670 (ВН)",
-            "RET_670_LV": "RET-670 (НН)",
+            "RET_TOR300_670_HV": "RET-670/ТОР-300 (ВН)",
+            "RET_TOR300_670_LV": "RET-670/ТОР-300 (НН)",
             "SPAC810T_HV": "SPAC810-T (ВН)",
             "SPAC810T_LV": "SPAC810-T (НН)"
         }

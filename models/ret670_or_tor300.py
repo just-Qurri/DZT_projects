@@ -1,7 +1,7 @@
 from .device import ProtectionDevice, WindingSide, SlopeFormat
 
 
-class RET670Device(ProtectionDevice):
+class RET670_TOR300_Device(ProtectionDevice):
 
     def __init__(self, device_type, default_params):
         super().__init__(device_type, default_params, slope_format=SlopeFormat.PERCENT)

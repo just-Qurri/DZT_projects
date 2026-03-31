@@ -9,7 +9,7 @@ import copy
 
 from models.mr801 import MR801Device
 from models.ret521 import RET521Device
-from models.ret670 import RET670Device
+from models.ret670_or_tor300 import RET670_TOR300_Device
 from models.spac810T import SPAC810TDevice
 from config.constants import DeviceConstants
 from views.main_window import MainWindow
@@ -53,14 +53,14 @@ class AppController:
             default_params=copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS)
         )
 
-        self.devices['RET_670_HV'] = RET670Device(
+        self.devices['RET_TOR300_670_HV'] = RET670_TOR300_Device(
             device_type='RET_670_HV',
-            default_params=copy.deepcopy(DeviceConstants.RET670_HV_DEFAULTS)
+            default_params=copy.deepcopy(DeviceConstants.RET670_TOR300_HV_DEFAULTS)
         )
 
-        self.devices['RET_670_LV'] = RET670Device(
+        self.devices['RET_TOR300_670_LV'] = RET670_TOR300_Device(
             device_type='RET_670_LV',
-            default_params=copy.deepcopy(DeviceConstants.RET670_LV_DEFAULTS)
+            default_params=copy.deepcopy(DeviceConstants.RET670_TOR300_LV_DEFAULTS)
         )
 
         self.devices['SPAC810T_HV'] = SPAC810TDevice(
