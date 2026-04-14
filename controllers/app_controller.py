@@ -53,13 +53,13 @@ class AppController:
             default_params=copy.deepcopy(DeviceConstants.RET521_LV_DEFAULTS)
         )
 
-        self.devices['RET_TOR300_670_HV'] = RET670_TOR300_Device(
-            device_type='RET_670_HV',
+        self.devices['RET670_TOR300_HV'] = RET670_TOR300_Device(
+            device_type='RET670_TOR300_HV',
             default_params=copy.deepcopy(DeviceConstants.RET670_TOR300_HV_DEFAULTS)
         )
 
-        self.devices['RET_TOR300_670_LV'] = RET670_TOR300_Device(
-            device_type='RET_670_LV',
+        self.devices['RET670_TOR300_LV'] = RET670_TOR300_Device(
+            device_type='RET670_TOR300_LV',
             default_params=copy.deepcopy(DeviceConstants.RET670_TOR300_LV_DEFAULTS)
         )
 
