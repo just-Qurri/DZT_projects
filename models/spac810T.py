@@ -14,7 +14,7 @@ class SPAC810TDevice(ProtectionDevice):
         """
         # Получаем базовые параметры характеристики
         char_params = super()._get_char_params(params)
-        k2 = 0.45
+        k2 = 1
         char_params['k2'] = k2
         return char_params
 
